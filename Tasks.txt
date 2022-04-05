@@ -1,0 +1,7 @@
+- domain logic -> Ramiz
+- deepl translation service
+- web client
+- markdown renderer -> Nermin
+- command line parser
+- main method
+- setup github build & sonarcould -> Ramiz

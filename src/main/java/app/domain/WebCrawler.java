@@ -1,6 +1,7 @@
 package app.domain;
 
 import java.net.URL;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,7 +28,8 @@ public class WebCrawler {
     Page page = pageLoader.loadPage(url);
     Report resultReport = new Report();
     resultReport.addPage(page);
-    resultReport = translationService.translateReport(resultReport);
+    Locale targetLanguage = inputParameters.getTargetLanguage();
+    resultReport = translationService.translateReport(resultReport, targetLanguage);
     if (depth <= 1) {
       return resultReport;
     }

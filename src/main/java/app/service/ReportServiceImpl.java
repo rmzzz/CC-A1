@@ -9,13 +9,12 @@ import app.domain.ReportService;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class ReportServiceImpl implements ReportService {
 
-  private final String markDownBreak = "<br>";
+  private static final String MARK_DOWN_BREAK = "<br>";
 
     @Override
     public void createMarkdownReport(Report targetReport, CommandLine commandLineInput) {
@@ -25,7 +24,7 @@ public class ReportServiceImpl implements ReportService {
       reportString += createPageContentAsString(targetReport.getPageList());
 
       try{
-        FileWriter fileWriter = new FileWriter(transformURLintoName(commandLineInput.getUrl()) + ".md");
+        FileWriter fileWriter = new FileWriter(extractDomainNameFromURL(commandLineInput.getUrl()) + ".md");
         fileWriter.write(reportString);
         fileWriter.close();
       }catch (IOException ioException){
@@ -36,10 +35,10 @@ public class ReportServiceImpl implements ReportService {
 
     private String createMetaInformationAsString(CommandLine commandLineInput){
       return "Input:\n"
-              + markDownBreak + "<"+ commandLineInput.getUrl() +">\n"
-              + markDownBreak + "depth: " + commandLineInput.getDepth() + "\n"
-              + markDownBreak + "target language: " + commandLineInput.getTargetLanguage() + "\n"
-              + markDownBreak + "report:\n";
+              + MARK_DOWN_BREAK + "<"+ commandLineInput.getUrl() +">\n"
+              + MARK_DOWN_BREAK + "depth: " + commandLineInput.getDepth() + "\n"
+              + MARK_DOWN_BREAK + "target language: " + commandLineInput.getTargetLanguage() + "\n"
+              + MARK_DOWN_BREAK + "report:\n";
     }
 
     private String createPageContentAsString(List<Page> pageList){
@@ -71,17 +70,36 @@ public class ReportServiceImpl implements ReportService {
       StringBuilder linksAsString = new StringBuilder();
 
       linkStream.forEach(link-> linksAsString.append(createSingleLinkAsString(link)));
-      linksAsString.append(markDownBreak + "\n");
+      linksAsString.append(MARK_DOWN_BREAK + "\n");
 
       return linksAsString.toString();
     }
 
     private String createSingleLinkAsString(Link link){
-      return (markDownBreak + "-->"+ ((link.broken())?"broken link ":"link to <") + link.url() + ">\n");
+      return (MARK_DOWN_BREAK + "-->"+ ((link.broken())?"broken link ":"link to <") + link.url() + ">\n");
     }
 
-    private String transformURLintoName(URL targetURL){
-      // TODO transform URL into String
-      return "stub";
+    public String extractDomainNameFromURL(URL targetURL){
+
+      String result = null;
+      try{
+        String URLstring = targetURL.getHost();
+        String[] URLsubstrings = URLstring.split("\\.");
+
+        for(String substring : URLsubstrings){
+          if(!substring.matches("www")){
+            result = substring;
+            break;
+          }
+        }
+        if(result == null){
+          throw new NullPointerException();
+        }
+      }catch (NullPointerException nullPointerException){
+        nullPointerException.printStackTrace();
+        System.out.println("URL could not be transformed into domain name. The file will be called \"report.md\" instead.");
+        return "report";
+      }
+      return result;
     }
 }

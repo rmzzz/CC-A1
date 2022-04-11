@@ -23,11 +23,9 @@ public class ReportServiceImpl implements ReportService {
       reportString += createMetaInformationAsString(commandLineInput);
       reportString += createPageContentAsString(targetReport.getPageList());
 
-      try{
-        FileWriter fileWriter = new FileWriter(extractDomainNameFromURL(commandLineInput.getUrl()) + ".md");
+      try(FileWriter fileWriter = new FileWriter(extractDomainNameFromURL(commandLineInput.getUrl()) + ".md")){
         fileWriter.write(reportString);
-        fileWriter.close();
-      }catch (IOException ioException){
+      } catch (IOException ioException) {
         System.out.println("An error occurred during file writing.\n");
         ioException.printStackTrace();
       }

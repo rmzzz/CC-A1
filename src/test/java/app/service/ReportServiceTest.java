@@ -4,22 +4,17 @@ import app.domain.Heading;
 import app.domain.Link;
 import app.domain.Page;
 import app.domain.Report;
-import app.domain.ReportService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.CharBuffer;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -35,10 +30,12 @@ public class ReportServiceTest {
   URL qwantURL;
   URL aauURL;
   URL stackOverFlowURL;
+  URL githubURL;
   Link googleLink;
   Link qwantLink;
   Link aauLink;
   Link stackOverFlowLink;
+  Link githubLink;
   Report report;
   Page page1;
   Page page2;
@@ -47,6 +44,7 @@ public class ReportServiceTest {
   List<Heading> headingList2;
   List<Link> linksList1;
   List<Link> linksList2;
+  List<Link> linksList3;
 
   final String expectedResult = "Input:\n" +
           "<br><https://www.google.at/>\n" +
@@ -76,10 +74,12 @@ public class ReportServiceTest {
     qwantURL = new URL("https://www.qwant.com/");
     aauURL = new URL("https://www.aau.at/");
     stackOverFlowURL = new URL("https://stackoverflow.com/");
+    githubURL = new URL("https://github.com/rmzzz/CC-A1");
     googleLink = new Link(googleURL, "Google", false);
     qwantLink = new Link(qwantURL, "Qwant", true);
     aauLink = new Link(aauURL, "AAU", false);
     stackOverFlowLink = new Link(stackOverFlowURL, "Stackoverflow", true);
+    githubLink = new Link(githubURL, "GitHub", false);
     report = mock(Report.class);
     page1 = mock(Page.class);
     page2 = mock(Page.class);
@@ -88,6 +88,7 @@ public class ReportServiceTest {
     headingList2 = new LinkedList<>();
     linksList1 = new LinkedList<>();
     linksList2 = new LinkedList<>();
+    linksList3 = new LinkedList<>();
 
     when(cli1.getUrl()).thenReturn(googleURL);
     when(cli1.getDepth()).thenReturn(1);
@@ -117,6 +118,7 @@ public class ReportServiceTest {
     linksList1.add(qwantLink);
     linksList2.add(aauLink);
     linksList2.add(stackOverFlowLink);
+    linksList3.add(githubLink);
   }
 
   @Test
@@ -146,5 +148,51 @@ public class ReportServiceTest {
     verify(page1, times(1)).getHeadings();
     verify(page2, times(1)).streamLinks();
     verify(page2, times(1)).getHeadings();
+  }
+
+  @Test
+  void testExtractDomainFromURLgoogle(){
+    assertEquals("google" ,reportService.extractDomainNameFromURL(googleURL));
+  }
+  @Test
+  void testExtractDomainFromURLstackoverflow(){
+    assertEquals("stackoverflow" ,reportService.extractDomainNameFromURL(stackOverFlowURL));
+  }
+  @Test
+  void testExtractDomainFromURLaau(){
+    assertEquals("aau" ,reportService.extractDomainNameFromURL(aauURL));
+  }
+  @Test
+  void testExtractDomainFromURLgitHub(){
+    assertEquals("github" ,reportService.extractDomainNameFromURL(githubURL));
+  }
+
+  @Test
+  void createSingleLinkTestValid(){
+    assertEquals("<br>-->link to <https://www.aau.at/>\n", reportService.createSingleLinkAsString(aauLink));
+  }
+  @Test
+  void createSingleLinkTestBroken(){
+    assertEquals("<br>-->broken link <https://stackoverflow.com/>\n", reportService.createSingleLinkAsString(stackOverFlowLink));
+  }
+
+  @Test
+  void createHeadingTest(){
+    assertEquals("# Header A1\n# Header A2\n## Header B1\n### Header C1\n", reportService.createHeadingsAsString(headingList2));
+  }
+
+  @Test
+  void createLinksTest(){
+    assertEquals("<br>-->link to <https://github.com/rmzzz/CC-A1>\n<br>\n", reportService.createLinksAsString(linksList3.stream()));
+  }
+
+  @Test
+  void createMetaInformationTest(){
+    String expected ="Input:\n" +
+            "<br><https://www.qwant.com/>\n" +
+            "<br>depth: 3\n" +
+            "<br>target language: fr\n" +
+            "<br>report:\n";
+    assertEquals(expected, reportService.createMetaInformationAsString(cli2));
   }
 }

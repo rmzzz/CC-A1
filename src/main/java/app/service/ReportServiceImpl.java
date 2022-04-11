@@ -76,7 +76,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private String createSingleLinkAsString(Link link){
-      return (MARK_DOWN_BREAK + "-->"+ ((link.broken())?"broken link ":"link to <") + link.url() + ">\n");
+      return (MARK_DOWN_BREAK + "-->"+ ((link.broken())?"broken link <":"link to <") + link.url() + ">\n");
     }
 
     public String extractDomainNameFromURL(URL targetURL){

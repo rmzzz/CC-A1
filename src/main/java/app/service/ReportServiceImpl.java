@@ -27,7 +27,6 @@ public class ReportServiceImpl implements ReportService {
         fileWriter.write(reportString);
       } catch (IOException ioException) {
         System.out.println("An error occurred during file writing.\n");
-        ioException.printStackTrace();
       }
     }
 
@@ -94,7 +93,6 @@ public class ReportServiceImpl implements ReportService {
           throw new NullPointerException();
         }
       }catch (NullPointerException nullPointerException){
-        nullPointerException.printStackTrace();
         System.out.println("URL could not be transformed into domain name. The file will be called \"report.md\" instead.");
         return "report";
       }

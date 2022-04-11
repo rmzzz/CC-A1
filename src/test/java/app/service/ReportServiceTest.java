@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 public class ReportServiceTest {
 
-  ReportService reportService;
+  ReportServiceImpl reportService;
   CommandLine cli1;
   CommandLine cli2;
   URL googleURL;
@@ -117,7 +117,6 @@ public class ReportServiceTest {
     linksList1.add(qwantLink);
     linksList2.add(aauLink);
     linksList2.add(stackOverFlowLink);
-
   }
 
   @Test

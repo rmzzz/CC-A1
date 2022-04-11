@@ -33,7 +33,7 @@ public class ReportServiceImpl implements ReportService {
       }
     }
 
-    private String createMetaInformationAsString(CommandLine commandLineInput){
+    String createMetaInformationAsString(CommandLine commandLineInput){
       return "Input:\n"
               + MARK_DOWN_BREAK + "<"+ commandLineInput.getUrl() +">\n"
               + MARK_DOWN_BREAK + "depth: " + commandLineInput.getDepth() + "\n"
@@ -41,7 +41,7 @@ public class ReportServiceImpl implements ReportService {
               + MARK_DOWN_BREAK + "report:\n";
     }
 
-    private String createPageContentAsString(List<Page> pageList){
+    String createPageContentAsString(List<Page> pageList){
       StringBuilder pageContent = new StringBuilder();
 
       for(Page page: pageList){
@@ -51,7 +51,7 @@ public class ReportServiceImpl implements ReportService {
       return  pageContent.toString();
     }
 
-    private String createHeadingsAsString(List<Heading> headingList){
+    String createHeadingsAsString(List<Heading> headingList){
       headingList.sort((o1, o2) -> o1.getHeadingDepth() - o2.getHeadingDepth());
 
       StringBuilder headingString = new StringBuilder();
@@ -66,7 +66,7 @@ public class ReportServiceImpl implements ReportService {
       return headingString.toString();
     }
 
-    private String createLinksAsString(Stream<Link> linkStream){
+    String createLinksAsString(Stream<Link> linkStream){
       StringBuilder linksAsString = new StringBuilder();
 
       linkStream.forEach(link-> linksAsString.append(createSingleLinkAsString(link)));
@@ -75,7 +75,7 @@ public class ReportServiceImpl implements ReportService {
       return linksAsString.toString();
     }
 
-    private String createSingleLinkAsString(Link link){
+    String createSingleLinkAsString(Link link){
       return (MARK_DOWN_BREAK + "-->"+ ((link.broken())?"broken link <":"link to <") + link.url() + ">\n");
     }
 

@@ -194,5 +194,9 @@ public class ReportServiceTest {
             "<br>target language: fr\n" +
             "<br>report:\n";
     assertEquals(expected, reportService.createMetaInformationAsString(cli2));
+
+    verify(cli2, times(1)).getUrl();
+    verify(cli2, times(1)).getDepth();
+    verify(cli2, times(1)).getTargetLanguage();
   }
 }

@@ -9,6 +9,6 @@ public class WebPageLoader implements PageLoader {
   @Override
   public Page loadPage(URL pageUrl) {
     // TODO complete impl
-    return new Page();
+    return new Page(pageUrl);
   }
 }

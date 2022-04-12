@@ -47,7 +47,7 @@ class WebCrawlerTest {
   @Test
   void crawlUrlSingleDepth() throws Exception {
     Set<URL> visited = new HashSet<>();
-    Page page = new Page();
+    Page page = new Page(targetUrl);
     doReturn(page).when(pageLoaderMock).loadPage(eq(targetUrl));
     Report report = crawler.crawlUrl(targetUrl, 1, visited);
 
@@ -64,9 +64,9 @@ class WebCrawlerTest {
   void crawlUrlDoubleDepth() throws Exception {
     URL linkUrl = new URL(targetUrl, "/about.html");
     Set<URL> visited = new HashSet<>();
-    Page mainPage = new Page();
+    Page mainPage = new Page(targetUrl);
     mainPage.links.add(new Link(linkUrl, "About"));
-    Page subPage = new Page();
+    Page subPage = new Page(linkUrl);
     doReturn(mainPage).when(pageLoaderMock).loadPage(eq(targetUrl));
     doReturn(subPage).when(pageLoaderMock).loadPage(eq(linkUrl));
     Report report = crawler.crawlUrl(targetUrl, 2, visited);
@@ -86,7 +86,9 @@ class WebCrawlerTest {
   void crawl() throws Exception {
     URL aboutUrl = new URL(targetUrl, "/about.html");
     URL termsUrl = new URL(targetUrl, "/terms.html");
-    Map<URL, Page> pages = Map.of(targetUrl, new Page(), aboutUrl, new Page(), termsUrl, new Page());
+    Map<URL, Page> pages = Map.of(targetUrl, new Page(targetUrl),
+            aboutUrl, new Page(aboutUrl),
+            termsUrl, new Page(termsUrl));
     pages.get(targetUrl).links.add(new Link(aboutUrl, "About"));
     pages.get(targetUrl).links.add(new Link(termsUrl, "Terms"));
     pages.get(aboutUrl).links.add(new Link(targetUrl, "Back"));

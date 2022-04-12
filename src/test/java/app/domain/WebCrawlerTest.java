@@ -65,7 +65,7 @@ class WebCrawlerTest {
     URL linkUrl = new URL(targetUrl, "/about.html");
     Set<URL> visited = new HashSet<>();
     Page mainPage = new Page(targetUrl);
-    mainPage.links.add(new Link(linkUrl, "About"));
+    mainPage.links.add(new Link(linkUrl, "About", false));
     Page subPage = new Page(linkUrl);
     doReturn(mainPage).when(pageLoaderMock).loadPage(eq(targetUrl));
     doReturn(subPage).when(pageLoaderMock).loadPage(eq(linkUrl));
@@ -89,10 +89,10 @@ class WebCrawlerTest {
     Map<URL, Page> pages = Map.of(targetUrl, new Page(targetUrl),
             aboutUrl, new Page(aboutUrl),
             termsUrl, new Page(termsUrl));
-    pages.get(targetUrl).links.add(new Link(aboutUrl, "About"));
-    pages.get(targetUrl).links.add(new Link(termsUrl, "Terms"));
-    pages.get(aboutUrl).links.add(new Link(targetUrl, "Back"));
-    pages.get(termsUrl).links.add(new Link(targetUrl, "Home"));
+    pages.get(targetUrl).links.add(new Link(aboutUrl, "About", false));
+    pages.get(targetUrl).links.add(new Link(termsUrl, "Terms", false));
+    pages.get(aboutUrl).links.add(new Link(targetUrl, "Back", false));
+    pages.get(termsUrl).links.add(new Link(targetUrl, "Home", false));
     when(pageLoaderMock.loadPage(any(URL.class))).then(i -> pages.get((URL)i.getArgument(0)));
 
     Report report = crawler.crawl();

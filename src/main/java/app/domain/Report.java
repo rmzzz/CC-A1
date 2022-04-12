@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class Report {
 
@@ -26,6 +28,12 @@ public class Report {
     subPages.putAll(report.subPages);
     return this;
   }
+
+  public List<Page> getPageList(){
+    //TODO implement page list
+    return null;
+  }
+
 
   public URL getInputUrl() {
     return mainPage.getPageUrl();

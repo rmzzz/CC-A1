@@ -1,6 +1,7 @@
 package app.domain;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -26,4 +27,7 @@ public class Page {
     return links.stream();
   }
 
+  public List<Heading> getHeadings(){
+    return headings;
+  }
 }

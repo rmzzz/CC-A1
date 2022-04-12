@@ -1,5 +1,6 @@
 package app;
 
+import app.domain.Link;
 import app.domain.PageLoader;
 import app.domain.Report;
 import app.domain.ReportService;
@@ -26,6 +27,6 @@ public class Main {
     WebCrawler crawler = new WebCrawler(cli, webClient, deepl);
     Report report = crawler.crawl();
     ReportService markdownReport = new ReportServiceImpl();
-    markdownReport.createMarkdownReport(report);
+    markdownReport.createMarkdownReport(report, cli);
   }
 }

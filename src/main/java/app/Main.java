@@ -16,7 +16,7 @@ public class Main {
     if (cli.isValid()) {
       executeCommand(cli);
     } else {
-      cli.printUsage();
+      System.out.println(cli.getUsage());
     }
   }
 

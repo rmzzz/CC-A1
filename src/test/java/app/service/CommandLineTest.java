@@ -2,57 +2,47 @@ package app.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
-import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 
 class CommandLineTest {
 
-    @BeforeEach
-    void setUp() {
-    }
+  CommandLine cli;
 
-    @Test
-    void fromCommandLine() {
-    }
+  @BeforeEach
+  void setUp() {
+    cli = new CommandLine();
+  }
 
-    @Test
-    void getUrl() {
-    }
+  @Test
+  void fromCommandLine() {
+  }
 
-    @Test
-    void getDepth() {
-    }
+  @Test
+  void getUrl() {
+  }
 
-    @Test
-    void getTargetLanguage() {
-    }
+  @Test
+  void getDepth() {
+  }
 
-    @Test
-    void isValid() {
-    }
+  @Test
+  void getTargetLanguage() {
+  }
 
-    @Test
-    void printUsage() {
-        PrintStream out = System.out;
-        try {
-            PrintStream spied = Mockito.spy(out);
-            System.setOut(spied);
+  @Test
+  void isValid() {
+  }
 
-            new CommandLine().printUsage();
+  @Test
+  void getUsage() {
+    String usage = cli.getUsage();
 
-            ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(spied).println(stringCaptor.capture());
-
-            assertTrue(stringCaptor.getValue().contains("url"));
-            assertTrue(stringCaptor.getValue().contains("depth"));
-            assertTrue(stringCaptor.getValue().contains("lang"));
-        } finally {
-            System.setOut(out);
-        }
-    }
+    assertEquals("""
+            Input parameters:
+              -u <url>, --url=<url> - URL to crawl, e.g. "https://www.aau.at" or just "www.aau.at"
+              -d <depth>, --depth=<depth> - the depth of websites to crawl, e.g. 3
+              -l <lang>, --lang=<lang> - target language as IETF BCP 47 language tag, e.g. "de-AT" or "de"
+            """, usage);
+  }
 }

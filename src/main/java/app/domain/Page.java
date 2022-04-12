@@ -27,6 +27,10 @@ public class Page {
     return links.stream();
   }
 
+  public List<Link> getLinks(){
+    return links;
+  }
+
   public List<Heading> getHeadings(){
     return headings;
   }

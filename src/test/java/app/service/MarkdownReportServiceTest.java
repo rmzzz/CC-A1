@@ -21,9 +21,9 @@ import java.util.Locale;
 
 import static org.mockito.Mockito.*;
 
-public class ReportServiceTest {
+public class MarkdownReportServiceTest {
 
-  ReportServiceImpl reportService;
+  MarkdownReportService reportService;
   CommandLine cli1;
   CommandLine cli2;
   URL googleURL;
@@ -46,28 +46,30 @@ public class ReportServiceTest {
   List<Link> linksList2;
   List<Link> linksList3;
 
-  final String expectedResult = "Input:\n" +
-          "<br><https://www.google.at/>\n" +
-          "<br>depth: 1\n" +
-          "<br>target language: en\n" +
-          "<br>report:\n" +
-          "# Heading1\n" +
-          "## Heading2\n" +
-          "## Heading3\n" +
-          "<br>-->link to <https://www.google.at/>\n" +
-          "<br>-->broken link <https://www.qwant.com/>\n" +
-          "<br>\n" +
-          "# Header A1\n" +
-          "# Header A2\n" +
-          "## Header B1\n" +
-          "### Header C1\n" +
-          "<br>-->link to <https://www.aau.at/>\n" +
-          "<br>-->broken link <https://stackoverflow.com/>\n"+
-          "<br>\n";
+  final String expectedResult = """
+          Input:
+          <br><https://www.google.at/>
+          <br>depth: 1
+          <br>target language: en
+          <br>report:
+          # Heading1
+          ## Heading2
+          ## Heading3
+          <br>-->link to <https://www.google.at/>
+          <br>-->broken link <https://www.qwant.com/>
+          <br>
+          # Header A1
+          # Header A2
+          ## Header B1
+          ### Header C1
+          <br>-->link to <https://www.aau.at/>
+          <br>-->broken link <https://stackoverflow.com/>
+          <br>
+          """;
 
   @BeforeEach
-  void setUp()throws MalformedURLException {
-    reportService = new ReportServiceImpl();
+  void setUp() throws MalformedURLException {
+    reportService = new MarkdownReportService();
     cli1 = mock(CommandLine.class);
     cli2 = mock(CommandLine.class);
     googleURL = new URL("https://www.google.at/");
@@ -99,9 +101,9 @@ public class ReportServiceTest {
 
     when(report.getPageList()).thenReturn(pageList);
     when(page1.getHeadings()).thenReturn(headingList1);
-    when(page1.streamLinks()).thenReturn(linksList1.stream());
+    when(page1.getLinks()).thenReturn(linksList1);
     when(page2.getHeadings()).thenReturn(headingList2);
-    when(page2.streamLinks()).thenReturn(linksList2.stream());
+    when(page2.getLinks()).thenReturn(linksList2);
 
     pageList.add(page1);
     pageList.add(page2);
@@ -122,17 +124,17 @@ public class ReportServiceTest {
   }
 
   @Test
-  void testcreateMarkdownReport() {
+  void testCreateMarkdownReport() {
 
-    reportService.createMarkdownReport(report, cli1);
+    reportService.createReport(report, cli1);
     char[] resultReport = new char[350];
-    Assertions.assertDoesNotThrow(()->{
+    Assertions.assertDoesNotThrow(() -> {
       FileReader fileReader = new FileReader("google.md");
       fileReader.read(resultReport);
       fileReader.close();
 
       File resultFile = new File("google.md");
-      if(!resultFile.delete()){
+      if (!resultFile.delete()) {
         throw new IOException();
       }
     });
@@ -144,59 +146,67 @@ public class ReportServiceTest {
     verify(cli1, times(1)).getTargetLanguage();
 
     verify(report, times(1)).getPageList();
-    verify(page1, times(1)).streamLinks();
+    verify(page1, times(1)).getLinks();
     verify(page1, times(1)).getHeadings();
-    verify(page2, times(1)).streamLinks();
+    verify(page2, times(1)).getLinks();
     verify(page2, times(1)).getHeadings();
+    verifyNoMoreInteractions(report, page1, page2, cli1);
   }
 
   @Test
-  void testExtractDomainFromURLgoogle(){
-    assertEquals("google" ,reportService.extractDomainNameFromURL(googleURL));
-  }
-  @Test
-  void testExtractDomainFromURLstackoverflow(){
-    assertEquals("stackoverflow" ,reportService.extractDomainNameFromURL(stackOverFlowURL));
-  }
-  @Test
-  void testExtractDomainFromURLaau(){
-    assertEquals("aau" ,reportService.extractDomainNameFromURL(aauURL));
-  }
-  @Test
-  void testExtractDomainFromURLgitHub(){
-    assertEquals("github" ,reportService.extractDomainNameFromURL(githubURL));
+  void testExtractDomainFromURLgoogle() {
+    assertEquals("google", reportService.extractDomainNameFromURL(googleURL));
   }
 
   @Test
-  void createSingleLinkTestValid(){
-    assertEquals("<br>-->link to <https://www.aau.at/>\n", reportService.createSingleLinkAsString(aauLink));
-  }
-  @Test
-  void createSingleLinkTestBroken(){
-    assertEquals("<br>-->broken link <https://stackoverflow.com/>\n", reportService.createSingleLinkAsString(stackOverFlowLink));
+  void testExtractDomainFromURLstackoverflow() {
+    assertEquals("stackoverflow", reportService.extractDomainNameFromURL(stackOverFlowURL));
   }
 
   @Test
-  void createHeadingTest(){
-    assertEquals("# Header A1\n# Header A2\n## Header B1\n### Header C1\n", reportService.createHeadingsAsString(headingList2));
+  void testExtractDomainFromURLaau() {
+    assertEquals("aau", reportService.extractDomainNameFromURL(aauURL));
   }
 
   @Test
-  void createLinksTest(){
-    assertEquals("<br>-->link to <https://github.com/rmzzz/CC-A1>\n<br>\n", reportService.createLinksAsString(linksList3.stream()));
+  void testExtractDomainFromURLgitHub() {
+    assertEquals("github", reportService.extractDomainNameFromURL(githubURL));
   }
 
   @Test
-  void createMetaInformationTest(){
-    String expected ="Input:\n" +
-            "<br><https://www.qwant.com/>\n" +
-            "<br>depth: 3\n" +
-            "<br>target language: fr\n" +
-            "<br>report:\n";
-    assertEquals(expected, reportService.createMetaInformationAsString(cli2));
+  void createSingleLinkTestValid() {
+    assertEquals("<br>-->link to <https://www.aau.at/>\n", reportService.renderSingleLink(aauLink));
+  }
+
+  @Test
+  void createSingleLinkTestBroken() {
+    assertEquals("<br>-->broken link <https://stackoverflow.com/>\n", reportService.renderSingleLink(stackOverFlowLink));
+  }
+
+  @Test
+  void createHeadingTest() {
+    assertEquals("# Header A1\n# Header A2\n## Header B1\n### Header C1\n", reportService.renderHeadings(headingList2));
+  }
+
+  @Test
+  void createLinksTest() {
+    assertEquals("<br>-->link to <https://github.com/rmzzz/CC-A1>\n<br>\n", reportService.renderLinks(linksList3));
+  }
+
+  @Test
+  void createMetaInformationTest() {
+    String expected = """
+            Input:
+            <br><https://www.qwant.com/>
+            <br>depth: 3
+            <br>target language: fr
+            <br>report:
+            """;
+    assertEquals(expected, reportService.renderMetaInformation(cli2));
 
     verify(cli2, times(1)).getUrl();
     verify(cli2, times(1)).getDepth();
     verify(cli2, times(1)).getTargetLanguage();
+    verifyNoMoreInteractions(cli2);
   }
 }

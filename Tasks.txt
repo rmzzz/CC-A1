@@ -2,6 +2,6 @@
 - deepl translation service
 - web client
 - markdown renderer -> Nermin
-- command line parser
+- command line parser -> Nermin
 - main method
 - setup github build & sonarcould -> Ramiz

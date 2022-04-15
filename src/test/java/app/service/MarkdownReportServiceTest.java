@@ -13,8 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -26,11 +25,11 @@ public class MarkdownReportServiceTest {
   MarkdownReportService reportService;
   CommandLine cli1;
   CommandLine cli2;
-  URL googleURL;
-  URL qwantURL;
-  URL aauURL;
-  URL stackOverFlowURL;
-  URL githubURL;
+  URI googleURL;
+  URI qwantURL;
+  URI aauURL;
+  URI stackOverFlowURL;
+  URI githubURL;
   Link googleLink;
   Link qwantLink;
   Link aauLink;
@@ -68,15 +67,15 @@ public class MarkdownReportServiceTest {
           """;
 
   @BeforeEach
-  void setUp() throws MalformedURLException {
+  void setUp() throws Exception {
     reportService = new MarkdownReportService();
     cli1 = mock(CommandLine.class);
     cli2 = mock(CommandLine.class);
-    googleURL = new URL("https://www.google.at/");
-    qwantURL = new URL("https://www.qwant.com/");
-    aauURL = new URL("https://www.aau.at/");
-    stackOverFlowURL = new URL("https://stackoverflow.com/");
-    githubURL = new URL("https://github.com/rmzzz/CC-A1");
+    googleURL = new URI("https://www.google.at/");
+    qwantURL = new URI("https://www.qwant.com/");
+    aauURL = new URI("https://www.aau.at/");
+    stackOverFlowURL = new URI("https://stackoverflow.com/");
+    githubURL = new URI("https://github.com/rmzzz/CC-A1");
     googleLink = new Link(googleURL, "Google", false);
     qwantLink = new Link(qwantURL, "Qwant", true);
     aauLink = new Link(aauURL, "AAU", false);

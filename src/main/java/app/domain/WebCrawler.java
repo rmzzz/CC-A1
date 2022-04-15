@@ -1,6 +1,6 @@
 package app.domain;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,13 +17,13 @@ public class WebCrawler {
   }
 
   public Report crawl() {
-    URL url = inputParameters.getUrl();
+    URI url = inputParameters.getUrl();
     int depth = inputParameters.getDepth();
-    Set<URL> visitedUrls = ConcurrentHashMap.newKeySet();
+    Set<URI> visitedUrls = ConcurrentHashMap.newKeySet();
     return crawlUrl(url, depth, visitedUrls);
   }
 
-  Report crawlUrl(URL url, int depth, Set<URL> visitedUrls) {
+  Report crawlUrl(URI url, int depth, Set<URI> visitedUrls) {
     Page page = loadPage(url, visitedUrls);
     Report resultReport = translatePage(page);
     if (depth <= 1) {
@@ -32,7 +32,7 @@ public class WebCrawler {
     return crawlSubPages(page, resultReport, depth - 1, visitedUrls);
   }
 
-  Page loadPage(URL url, Set<URL> visitedUrls) {
+  Page loadPage(URI url, Set<URI> visitedUrls) {
     visitedUrls.add(url);
     Page page = pageLoader.loadPage(url);
     return page;
@@ -46,7 +46,7 @@ public class WebCrawler {
     return resultReport;
   }
 
-  Report crawlSubPages(Page page, Report resultReport, int subDepth, Set<URL> visitedUrls) {
+  Report crawlSubPages(Page page, Report resultReport, int subDepth, Set<URI> visitedUrls) {
     return page.streamLinks()
             .map(Link::getUrl)
             .filter(u -> !visitedUrls.contains(u))

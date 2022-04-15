@@ -1,7 +1,7 @@
 package app.domain;
 
-import java.net.URL;
+import java.net.URI;
 
 public interface PageLoader {
-  Page loadPage(URL pageUrl);
+  Page loadPage(URI pageUrl);
 }

@@ -1,21 +1,20 @@
 package app.domain;
 
-import java.net.URL;
-import java.util.ArrayList;
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class Page {
-  final URL pageUrl;
+  final URI pageUrl;
   final List<Heading> headings = new LinkedList<>();
   final List<Link> links = new LinkedList<>();
 
-  public Page(URL pageUrl) {
+  public Page(URI pageUrl) {
     this.pageUrl = pageUrl;
   }
 
-  public URL getPageUrl() {
+  public URI getPageUrl() {
     return pageUrl;
   }
 

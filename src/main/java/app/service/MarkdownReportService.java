@@ -9,7 +9,7 @@ import app.domain.ReportService;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 public class MarkdownReportService implements ReportService {
@@ -84,7 +84,7 @@ public class MarkdownReportService implements ReportService {
     return (MARK_DOWN_BREAK + "-->" + ((link.isBroken()) ? "broken link <" : "link to <") + link.getUrl() + ">\n");
   }
 
-  public String extractDomainNameFromURL(URL targetURL) {
+  public String extractDomainNameFromURL(URI targetURL) {
     String result = null;
     String host = targetURL.getHost();
 

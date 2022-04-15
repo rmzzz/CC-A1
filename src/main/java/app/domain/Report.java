@@ -1,6 +1,6 @@
 package app.domain;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -15,7 +15,7 @@ public class Report {
   Locale targetLanguage;
 
   Page mainPage;
-  Map<URL, Page> subPages = new LinkedHashMap<>();
+  Map<URI, Page> subPages = new LinkedHashMap<>();
 
   public void addPage(Page page) {
     mainPage = page;
@@ -30,12 +30,12 @@ public class Report {
 
   public List<Page> getPageList() {
     List<Page> pageList = new LinkedList<>();
-    Set<URL> addedUrls = new HashSet<>();
+    Set<URI> addedUrls = new HashSet<>();
     addPageToList(mainPage, pageList, addedUrls, 1);
     return pageList;
   }
 
-  void addPageToList(Page page, List<Page> pageList, Set<URL> addedUrls, int depth) {
+  void addPageToList(Page page, List<Page> pageList, Set<URI> addedUrls, int depth) {
     if (!addedUrls.add(page.pageUrl)) {
       return;
     }
@@ -49,7 +49,7 @@ public class Report {
             .forEach(p -> addPageToList(p, pageList, addedUrls, depth + 1));
   }
 
-  public URL getInputUrl() {
+  public URI getInputUrl() {
     return mainPage.getPageUrl();
   }
 

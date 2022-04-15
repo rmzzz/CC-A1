@@ -2,7 +2,7 @@ package app.service;
 
 import app.domain.InputParameters;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Locale;
 
 public class CommandLine implements InputParameters {
@@ -10,7 +10,7 @@ public class CommandLine implements InputParameters {
   public static final String PARAM_DEPTH = "depth";
   public static final String PARAM_LANGUAGE = "lang";
 
-  private URL url;
+  private URI url;
   private int depth;
   private Locale targetLanguage;
   private boolean valid;
@@ -22,7 +22,7 @@ public class CommandLine implements InputParameters {
   }
 
   @Override
-  public URL getUrl() {
+  public URI getUrl() {
     return url;
   }
 

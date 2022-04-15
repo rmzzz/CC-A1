@@ -4,8 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -19,14 +18,14 @@ class WebCrawlerTest {
   InputParameters inputParametersMock;
   PageLoader pageLoaderMock;
   TranslationService translationServiceMock;
-  URL targetUrl;
+  URI targetUrl;
   int targetDepth;
   Locale targetLocale;
 
   @BeforeEach
   void setUp() throws Exception {
     inputParametersMock = mock(InputParameters.class);
-    targetUrl = new URL("http://localhost");
+    targetUrl = new URI("http://localhost");
     targetDepth = 3;
     targetLocale = Locale.GERMAN;
     when(inputParametersMock.getTargetLanguage()).thenReturn(targetLocale);
@@ -46,7 +45,7 @@ class WebCrawlerTest {
 
   @Test
   void crawlUrlSingleDepth() throws Exception {
-    Set<URL> visited = new HashSet<>();
+    Set<URI> visited = new HashSet<>();
     Page page = new Page(targetUrl);
     doReturn(page).when(pageLoaderMock).loadPage(eq(targetUrl));
     Report report = crawler.crawlUrl(targetUrl, 1, visited);
@@ -62,8 +61,8 @@ class WebCrawlerTest {
 
   @Test
   void crawlUrlDoubleDepth() throws Exception {
-    URL linkUrl = new URL(targetUrl, "/about.html");
-    Set<URL> visited = new HashSet<>();
+    URI linkUrl = targetUrl.resolve("/about.html");
+    Set<URI> visited = new HashSet<>();
     Page mainPage = new Page(targetUrl);
     mainPage.links.add(new Link(linkUrl, "About", false));
     Page subPage = new Page(linkUrl);
@@ -84,16 +83,16 @@ class WebCrawlerTest {
 
   @Test
   void crawl() throws Exception {
-    URL aboutUrl = new URL(targetUrl, "/about.html");
-    URL termsUrl = new URL(targetUrl, "/terms.html");
-    Map<URL, Page> pages = Map.of(targetUrl, new Page(targetUrl),
+    URI aboutUrl = targetUrl.resolve("/about.html");
+    URI termsUrl = targetUrl.resolve("/terms.html");
+    Map<URI, Page> pages = Map.of(targetUrl, new Page(targetUrl),
             aboutUrl, new Page(aboutUrl),
             termsUrl, new Page(termsUrl));
     pages.get(targetUrl).links.add(new Link(aboutUrl, "About", false));
     pages.get(targetUrl).links.add(new Link(termsUrl, "Terms", false));
     pages.get(aboutUrl).links.add(new Link(targetUrl, "Back", false));
     pages.get(termsUrl).links.add(new Link(targetUrl, "Home", false));
-    when(pageLoaderMock.loadPage(any(URL.class))).then(i -> pages.get((URL)i.getArgument(0)));
+    when(pageLoaderMock.loadPage(any(URI.class))).then(i -> pages.get((URI)i.getArgument(0)));
 
     Report report = crawler.crawl();
 

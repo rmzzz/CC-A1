@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,16 +15,16 @@ class ReportTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    mainPage = new Page(new URL("http://localhost/main"));
-    subPage1 = new Page(new URL("http://localhost/sub1"));
-    subPage2 = new Page(new URL("http://localhost/sub2"));
-    leafPage11 = new Page(new URL("http://localhost/leaf11"));
-    leafPage12 = new Page(new URL("http://localhost/leaf12"));
+    mainPage = new Page(new URI("http://localhost/main"));
+    subPage1 = new Page(new URI("http://localhost/sub1"));
+    subPage2 = new Page(new URI("http://localhost/sub2"));
+    leafPage11 = new Page(new URI("http://localhost/leaf11"));
+    leafPage12 = new Page(new URI("http://localhost/leaf12"));
     mainPage.links.add(new Link(subPage1.pageUrl, "sub1"));
     mainPage.links.add(new Link(subPage2.pageUrl, "sub2"));
     subPage1.links.add(new Link(leafPage11.pageUrl, "leaf11"));
     subPage1.links.add(new Link(leafPage12.pageUrl, "leaf12"));
-    subPage2.links.add(new Link(new URL("http://broken"), "broken", true));
+    subPage2.links.add(new Link(new URI("http://broken"), "broken", true));
     report = new Report();
   }
 

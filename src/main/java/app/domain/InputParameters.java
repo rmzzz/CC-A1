@@ -1,10 +1,10 @@
 package app.domain;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Locale;
 
 public interface InputParameters {
-    URL getUrl();
+    URI getUrl();
 
     int getDepth();
 

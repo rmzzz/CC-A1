@@ -1,24 +1,24 @@
 package app.domain;
 
-import java.net.URL;
+import java.net.URI;
 
 public class Link {
-  final URL url;
+  final URI url;
   final String title;
   boolean broken;
 
   int depth;
 
-  public Link(URL url, String title) {
+  public Link(URI url, String title) {
     this(url, title, false);
   }
-  public Link(URL url, String title, boolean broken) {
+  public Link(URI url, String title, boolean broken) {
     this.url = url;
     this.title = title;
     this.broken = broken;
   }
 
-  public URL getUrl() {
+  public URI getUrl() {
     return url;
   }
 

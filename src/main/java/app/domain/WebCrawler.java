@@ -48,7 +48,7 @@ public class WebCrawler {
 
   Report crawlSubPages(Page page, Report resultReport, int subDepth, Set<URL> visitedUrls) {
     return page.streamLinks()
-            .map(Link::url)
+            .map(Link::getUrl)
             .filter(u -> !visitedUrls.contains(u))
             .map(u -> crawlUrl(u, subDepth, visitedUrls))
             .reduce(resultReport, Report::merge);

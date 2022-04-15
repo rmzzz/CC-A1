@@ -41,9 +41,11 @@ public class Report {
     }
     pageList.add(page);
     page.streamLinks()
-            .peek(link -> link.setDepth(depth))
-            .peek(link -> link.setBroken(!subPages.containsKey(link.getUrl())))
-            .filter(link -> !link.isBroken())
+            .filter(link -> {
+              link.setDepth(depth);
+              link.setBroken(!subPages.containsKey(link.getUrl()));
+              return !link.isBroken();
+            })
             .map(Link::getUrl)
             .map(subPages::get)
             .forEach(p -> addPageToList(p, pageList, addedUrls, depth + 1));

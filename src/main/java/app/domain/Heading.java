@@ -1,21 +1,39 @@
 package app.domain;
 
+import java.util.Locale;
+
+/**
+ * Section heading element from HTML document
+ *
+ * @see <a href="https://www.w3.org/TR/2014/REC-html5-20141028/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements">HTML5 spec</a>
+ */
 public class Heading {
-    private String headingTitle;
-    private int headingDepth;
+  /**
+   * Heading text, i.e. as received from Element.innerText
+   */
+  String originalText;
 
-  public Heading(String headingTitle, int headingDepth){
-      this.headingTitle = headingTitle;
-      this.headingDepth = headingDepth;
-    }
+  String translatedText;
 
-    public Heading(){};
+  /**
+   * Heading rank according to html5 specification
+   */
+  int rank;
 
-  public String getHeadingTitle() {
-    return headingTitle;
+  public Heading(String originalText, int rank) {
+    this.originalText = originalText;
+    this.rank = rank;
   }
 
-  public int getHeadingDepth() {
-    return headingDepth;
+  public String getText() {
+    return translatedText != null ? translatedText : originalText;
+  }
+
+  public int getRank() {
+    return rank;
+  }
+
+  public void translate(TranslationService translationService, Locale targetLanguage) {
+    translatedText = translationService.translateText(originalText, targetLanguage);
   }
 }

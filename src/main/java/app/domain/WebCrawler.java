@@ -4,8 +4,11 @@ import java.net.URI;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 public class WebCrawler {
+  static Logger logger = Logger.getLogger("app.domain.WebCrawler");
+
   InputParameters inputParameters;
   PageLoader pageLoader;
   TranslationService translationService;
@@ -35,19 +38,20 @@ public class WebCrawler {
   Page loadPage(URI url, Set<URI> visitedUrls) {
     visitedUrls.add(url);
     Page page = pageLoader.loadPage(url);
+    logger.fine(() -> "loaded page " + page.pageUrl);
     return page;
   }
 
   Report translatePage(Page page) {
-    Report resultReport = new Report();
-    resultReport.addPage(page);
     Locale targetLanguage = inputParameters.getTargetLanguage();
-    resultReport = translationService.translateReport(resultReport, targetLanguage);
+    Page translatedPage = page.translate(translationService, targetLanguage);
+    Report resultReport = new Report(translatedPage);
+    logger.fine(() -> "translated page " + translatedPage.pageUrl);
     return resultReport;
   }
 
   Report crawlSubPages(Page page, Report resultReport, int subDepth, Set<URI> visitedUrls) {
-    return page.streamLinks()
+    return page.getLinks().stream()
             .map(Link::getUrl)
             .filter(u -> !visitedUrls.contains(u))
             .map(u -> crawlUrl(u, subDepth, visitedUrls))

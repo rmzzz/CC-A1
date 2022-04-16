@@ -17,8 +17,8 @@ public class Report {
   Page mainPage;
   Map<URI, Page> subPages = new LinkedHashMap<>();
 
-  public void addPage(Page page) {
-    mainPage = page;
+  public Report(Page mainPage) {
+    this.mainPage = mainPage;
   }
 
   public Report merge(Report report) {
@@ -40,15 +40,15 @@ public class Report {
       return;
     }
     pageList.add(page);
-    page.streamLinks()
-            .filter(link -> {
-              link.setDepth(depth);
-              link.setBroken(!subPages.containsKey(link.getUrl()));
-              return !link.isBroken();
-            })
-            .map(Link::getUrl)
-            .map(subPages::get)
-            .forEach(p -> addPageToList(p, pageList, addedUrls, depth + 1));
+    for (Link link : page.getLinks()) {
+      link.setDepth(depth);
+      Page subPage = subPages.get(link.getUrl());
+      if (subPage == null) {
+        link.setBroken(true);
+      } else {
+        addPageToList(subPage, pageList, addedUrls, depth + 1);
+      }
+    }
   }
 
   public URI getInputUrl() {

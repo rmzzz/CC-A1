@@ -10,13 +10,20 @@ import app.service.DeeplTranslationService;
 import app.service.MarkdownReportService;
 import app.service.WebPageLoader;
 
+import java.util.logging.Logger;
+
 public class Main {
+  static Logger logger = Logger.getLogger("app.Main");
+
   public static void main(String[] args) {
     CommandLine cli = CommandLine.fromCommandLine(args);
     if (cli.isValid()) {
       executeCommand(cli);
     } else {
-      System.out.println(cli.getUsage());
+      logger.warning("""
+        Invalid parameters.
+        Usage: java app.Main <parameters>
+        """ + cli.getUsage());
     }
   }
 

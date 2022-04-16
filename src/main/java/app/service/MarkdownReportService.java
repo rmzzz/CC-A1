@@ -60,11 +60,11 @@ public class MarkdownReportService implements ReportService {
 
   String renderSingleHeading(Heading heading) {
     StringBuilder headingString = new StringBuilder();
-    for (int i = 0; i < heading.getHeadingDepth(); i++) {
+    for (int i = 0; i < heading.getRank(); i++) {
       headingString.append('#');
     }
     headingString.append(" ");
-    headingString.append(heading.getHeadingTitle());
+    headingString.append(heading.getText());
     headingString.append("\n");
     return headingString.toString();
   }

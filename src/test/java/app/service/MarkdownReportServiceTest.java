@@ -55,14 +55,14 @@ public class MarkdownReportServiceTest {
           ## Heading2
           ## Heading3
           <br>-->link to <https://www.google.at/>
-          <br>-->broken link <https://www.qwant.com/>
+          <br>----->broken link <https://www.qwant.com/>
           <br>
           # Header A1
           # Header A2
           ## Header B1
           ### Header C1
-          <br>-->link to <https://www.aau.at/>
-          <br>-->broken link <https://stackoverflow.com/>
+          <br>->link to <https://www.aau.at/>
+          <br>--->broken link <https://stackoverflow.com/>
           <br>
           """;
 
@@ -115,6 +115,11 @@ public class MarkdownReportServiceTest {
     headingList2.add(new Heading("Header B1", 2));
     headingList2.add(new Heading("Header C1", 3));
 
+    googleLink.setDepth(2);
+    qwantLink.setDepth(5);
+    aauLink.setDepth(1);
+    stackOverFlowLink.setDepth(3);
+    githubLink.setDepth(9);
     linksList1.add(googleLink);
     linksList1.add(qwantLink);
     linksList2.add(aauLink);
@@ -126,7 +131,7 @@ public class MarkdownReportServiceTest {
   void testCreateMarkdownReport() {
 
     reportService.createReport(report, cli1);
-    char[] resultReport = new char[350];
+    char[] resultReport = new char[353];
     Assertions.assertDoesNotThrow(() -> {
       FileReader fileReader = new FileReader("google.md");
       fileReader.read(resultReport);
@@ -174,12 +179,12 @@ public class MarkdownReportServiceTest {
 
   @Test
   void createSingleLinkTestValid() {
-    assertEquals("<br>-->link to <https://www.aau.at/>\n", reportService.renderSingleLink(aauLink));
+    assertEquals("<br>->link to <https://www.aau.at/>\n", reportService.renderSingleLink(aauLink));
   }
 
   @Test
   void createSingleLinkTestBroken() {
-    assertEquals("<br>-->broken link <https://stackoverflow.com/>\n", reportService.renderSingleLink(stackOverFlowLink));
+    assertEquals("<br>--->broken link <https://stackoverflow.com/>\n", reportService.renderSingleLink(stackOverFlowLink));
   }
 
   @Test
@@ -189,7 +194,7 @@ public class MarkdownReportServiceTest {
 
   @Test
   void createLinksTest() {
-    assertEquals("<br>-->link to <https://github.com/rmzzz/CC-A1>\n<br>\n", reportService.renderLinks(linksList3));
+    assertEquals("<br>--------->link to <https://github.com/rmzzz/CC-A1>\n<br>\n", reportService.renderLinks(linksList3));
   }
 
   @Test

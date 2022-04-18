@@ -11,24 +11,37 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class MarkdownReportService implements ReportService {
 
   private static final String MARK_DOWN_BREAK = "<br>";
+  static Logger logger = Logger.getLogger("app.service.MarkDownReportService");
 
   @Override
   public void createReport(Report targetReport, InputParameters inputParameters) {
-    //TODO: split
+    String reportString = renderReport(targetReport, inputParameters);
+    createReportFile(reportString, renderFileName(inputParameters));
+  }
+
+  String renderReport(Report targetReport, InputParameters inputParameters){
     String reportString = "";
     reportString += renderMetaInformation(inputParameters);
     reportString += renderPageContents(targetReport.getPageList());
+    return reportString;
+  }
 
-    String fileName = extractDomainNameFromURL(inputParameters.getUrl()) + ".md";
+  void createReportFile(String reportString, String fileName){
     try (FileWriter fileWriter = new FileWriter(fileName)) {
       fileWriter.write(reportString);
     } catch (IOException ioException) {
-      System.out.println("An error occurred during file writing.\n");
+      logger.warning("An error occurred during file writing.\n");
     }
+  }
+
+  String renderFileName(InputParameters inputParameters){
+    String filename = extractDomainNameFromURL(inputParameters.getUrl()) + ".md";
+    return filename;
   }
 
   String renderMetaInformation(InputParameters inputParameters) {
@@ -81,7 +94,23 @@ public class MarkdownReportService implements ReportService {
   }
 
   String renderSingleLink(Link link) {
-    return (MARK_DOWN_BREAK + "-->" + ((link.isBroken()) ? "broken link <" : "link to <") + link.getUrl() + ">\n");
+    StringBuilder singleLinkString = new StringBuilder();
+    singleLinkString.append(MARK_DOWN_BREAK);
+    for(int i =0;i< link.getDepth();i++){
+      singleLinkString.append('-');
+    }
+    singleLinkString.append('>');
+    if(link.isBroken()){
+      singleLinkString.append("broken link ");
+    }
+    else {
+      singleLinkString.append("link to ");
+    }
+    singleLinkString.append("<");
+    singleLinkString.append(link.getUrl());
+    singleLinkString.append(">\n");
+
+    return singleLinkString.toString();
   }
 
   public String extractDomainNameFromURL(URI targetURL) {

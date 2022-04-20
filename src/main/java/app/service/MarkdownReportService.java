@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class MarkdownReportService implements ReportService {
 
   private static final String MARK_DOWN_BREAK = "<br>";
-  static Logger logger = Logger.getLogger("app.service.MarkDownReportService");
+  static Logger reportServiceLogger = Logger.getLogger("app.service.MarkDownReportService");
 
   @Override
   public void createReport(Report targetReport, InputParameters inputParameters) {
@@ -35,7 +35,7 @@ public class MarkdownReportService implements ReportService {
     try (FileWriter fileWriter = new FileWriter(fileName)) {
       fileWriter.write(reportString);
     } catch (IOException ioException) {
-      logger.warning("An error occurred during file writing.\n");
+      reportServiceLogger.warning("An error occurred during file writing.\n");
     }
   }
 

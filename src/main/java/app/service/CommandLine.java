@@ -19,9 +19,14 @@ public class CommandLine implements InputParameters {
   private Locale targetLanguage;
   private boolean valid;
 
+  public CommandLine(){
+    setDefaultValues();
+  }
+
   public static CommandLine fromCommandLine(String... args) {
     CommandLine commandLine = new CommandLine();
 
+    commandLine.setDefaultValues();
     boolean urlFlag = false;
     boolean depthFlag = false;
     boolean langFlag = false;
@@ -49,6 +54,18 @@ public class CommandLine implements InputParameters {
       }
     }
     return commandLine;
+  }
+
+  private void setDefaultValues() {
+    valid = true;
+    depth = 2;
+    targetLanguage = new Locale("en");
+    try {
+      url = new URI("http://histo.io/");
+    } catch (URISyntaxException e) {
+      commandLineLogger.warning("Error while parsing. Default URL could not be parsed.");
+      throw new RuntimeException(e);
+    }
   }
 
   private boolean checkFlag(boolean flag){

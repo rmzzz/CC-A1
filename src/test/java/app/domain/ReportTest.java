@@ -25,7 +25,7 @@ class ReportTest {
     subPage1.links.add(new Link(leafPage11.pageUrl, "leaf11"));
     subPage1.links.add(new Link(leafPage12.pageUrl, "leaf12"));
     subPage2.links.add(new Link(new URI("http://broken"), "broken", true));
-    report = new Report(mainPage);
+    report = new Report(mainPage, 3);
   }
 
   @AfterEach
@@ -34,7 +34,7 @@ class ReportTest {
 
   @Test
   void mergeSingle() {
-    Report subReport = new Report(subPage1);
+    Report subReport = new Report(subPage1, 2);
     report.merge(subReport);
 
     assertEquals(1, report.subPages.size());
@@ -43,10 +43,10 @@ class ReportTest {
 
   @Test
   void mergeMerged() {
-    Report mergedReport = new Report(subPage1);
-    Report leafReport1 = new Report(leafPage11);
+    Report mergedReport = new Report(subPage1, 3);
+    Report leafReport1 = new Report(leafPage11, 3);
     mergedReport.merge(leafReport1);
-    Report leafReport2 = new Report(leafPage12);
+    Report leafReport2 = new Report(leafPage12, 3);
     mergedReport.merge(leafReport2);
 
     report.merge(mergedReport);
@@ -59,17 +59,17 @@ class ReportTest {
 
   @Test
   void getPageList() {
-    Report subReport1 = new Report(subPage1);
+    Report subReport1 = new Report(subPage1, 3);
 
-    Report leafReport1 = new Report(leafPage11);
+    Report leafReport1 = new Report(leafPage11, 3);
     subReport1.merge(leafReport1);
 
-    Report leafReport2 = new Report(leafPage12);
+    Report leafReport2 = new Report(leafPage12, 3);
     subReport1.merge(leafReport2);
 
     report.merge(subReport1);
 
-    Report subReport2 = new Report(subPage2);
+    Report subReport2 = new Report(subPage2, 3);
     report.merge(subReport2);
 
     List<Page> pageList = report.getPageList();

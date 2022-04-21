@@ -96,7 +96,6 @@ class WebPageLoaderTest {
         System.out.println("httpd: " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " " + exchange.getProtocol() + "\n"
                 + new String(in.readAllBytes()));
 
-
         exchange.getResponseHeaders().add("Content-Type", "text/html");
         exchange.sendResponseHeaders(200, html.length());
         try (OutputStream out = exchange.getResponseBody()) {

@@ -18,9 +18,8 @@ public class Heading {
   /**
    * Heading rank according to html5 specification
    */
-  int rank;
+  final int rank;
 
-  // TODO impl depth
   int depth;
 
   public Heading(String originalText, int rank) {
@@ -36,7 +35,16 @@ public class Heading {
     return rank;
   }
 
+  public int getDepth() {
+    return depth;
+  }
+
+  public void setDepth(int depth) {
+    this.depth = depth;
+  }
+
   public void translate(TranslationService translationService, Locale targetLanguage) {
     translatedText = translationService.translateText(originalText, targetLanguage);
   }
+
 }

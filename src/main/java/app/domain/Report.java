@@ -13,12 +13,14 @@ public class Report {
 
   Locale sourceLanguage;
   Locale targetLanguage;
+  int maxDepth;
 
   Page mainPage;
   Map<URI, Page> subPages = new LinkedHashMap<>();
 
-  public Report(Page mainPage) {
+  public Report(Page mainPage, int maxDepth) {
     this.mainPage = mainPage;
+    this.maxDepth = maxDepth;
   }
 
   public Report merge(Report report) {
@@ -35,18 +37,20 @@ public class Report {
     return pageList;
   }
 
-  void addPageToList(Page page, List<Page> pageList, Set<URI> addedUrls, int depth) {
+  void addPageToList(Page page, List<Page> pageList, Set<URI> addedUrls, int currentDepth) {
     if (!addedUrls.add(page.pageUrl)) {
       return;
     }
     pageList.add(page);
-    for (Link link : page.getLinks()) {
-      link.setDepth(depth);
-      Page subPage = subPages.get(link.getUrl());
-      if (subPage == null) {
-        link.setBroken(true);
-      } else {
-        addPageToList(subPage, pageList, addedUrls, depth + 1);
+    page.setDepth(currentDepth);
+    if (currentDepth < maxDepth) {
+      for (Link link : page.getLinks()) {
+        Page subPage = subPages.get(link.getUrl());
+        if (subPage == null) {
+          link.setBroken(true);
+        } else {
+          addPageToList(subPage, pageList, addedUrls, currentDepth + 1);
+        }
       }
     }
   }

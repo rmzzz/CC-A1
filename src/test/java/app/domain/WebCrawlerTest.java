@@ -58,6 +58,7 @@ class WebCrawlerTest {
     assertEquals(1, visited.size());
     assertTrue(visited.contains(targetUrl));
     verify(inputParametersMock).getTargetLanguage();
+    verify(inputParametersMock).getDepth();
     verify(pageLoaderMock).loadPage(targetUrl);
     verify(translationServiceMock).translateText(h1.originalText, targetLocale);
     verify(translationServiceMock).translateText(h2.originalText, targetLocale);
@@ -85,6 +86,7 @@ class WebCrawlerTest {
     assertTrue(visited.contains(targetUrl));
     assertTrue(visited.contains(linkUrl));
     verify(inputParametersMock, times(2)).getTargetLanguage();
+    verify(inputParametersMock, times(2)).getDepth();
     verify(pageLoaderMock).loadPage(targetUrl);
     verify(pageLoaderMock).loadPage(linkUrl);
     verify(translationServiceMock, times(4)).translateText(any(String.class), any(Locale.class));
@@ -112,7 +114,7 @@ class WebCrawlerTest {
 
     assertNotNull(report);
     verify(inputParametersMock).getUrl();
-    verify(inputParametersMock).getDepth();
+    verify(inputParametersMock, times(4)).getDepth();
     verify(inputParametersMock, times(3)).getTargetLanguage();
     verify(pageLoaderMock).loadPage(eq(targetUrl));
     verify(pageLoaderMock).loadPage(eq(aboutUrl));

@@ -45,7 +45,7 @@ public class WebCrawler {
   Report translatePage(Page page) {
     Locale targetLanguage = inputParameters.getTargetLanguage();
     Page translatedPage = page.translate(translationService, targetLanguage);
-    Report resultReport = new Report(translatedPage);
+    Report resultReport = new Report(translatedPage, inputParameters.getDepth());
     logger.fine(() -> "translated page " + translatedPage.pageUrl);
     return resultReport;
   }

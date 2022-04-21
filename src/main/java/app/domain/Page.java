@@ -49,4 +49,9 @@ public class Page {
   public void setLanguage(String languageTag) {
     this.language = Locale.forLanguageTag(languageTag);
   }
+
+  void setDepth(int depth) {
+    headings.forEach(heading -> heading.setDepth(depth));
+    links.forEach(link -> link.setDepth(depth));
+  }
 }

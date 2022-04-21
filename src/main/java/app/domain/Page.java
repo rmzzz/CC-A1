@@ -9,6 +9,7 @@ public class Page {
   final URI pageUrl;
   final List<Heading> headings = new LinkedList<>();
   final List<Link> links = new LinkedList<>();
+  Locale language;
 
   public Page(URI pageUrl) {
     this.pageUrl = pageUrl;
@@ -39,5 +40,13 @@ public class Page {
       heading.translate(translationService, targetLanguage);
     }
     return this;
+  }
+
+  public Locale getLanguage() {
+    return language;
+  }
+
+  public void setLanguage(String languageTag) {
+    this.language = Locale.forLanguageTag(languageTag);
   }
 }

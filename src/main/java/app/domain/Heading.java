@@ -20,6 +20,9 @@ public class Heading {
    */
   int rank;
 
+  // TODO impl depth
+  int depth;
+
   public Heading(String originalText, int rank) {
     this.originalText = originalText;
     this.rank = rank;

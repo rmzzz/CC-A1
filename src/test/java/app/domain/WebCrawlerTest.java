@@ -51,14 +51,14 @@ class WebCrawlerTest {
     page.addHeading(h1);
     Heading h2 = new Heading("h2", 2);
     page.addHeading(h2);
-    doReturn(page).when(pageLoaderMock).loadPage(eq(targetUrl));
+    doReturn(page).when(pageLoaderMock).loadPage(targetUrl);
     Report report = crawler.crawlUrl(targetUrl, 1, visited);
 
     assertNotNull(report);
     assertEquals(1, visited.size());
     assertTrue(visited.contains(targetUrl));
     verify(inputParametersMock).getTargetLanguage();
-    verify(pageLoaderMock).loadPage(eq(targetUrl));
+    verify(pageLoaderMock).loadPage(targetUrl);
     verify(translationServiceMock).translateText(h1.originalText, targetLocale);
     verify(translationServiceMock).translateText(h2.originalText, targetLocale);
     verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
@@ -73,8 +73,11 @@ class WebCrawlerTest {
     Page subPage = new Page(linkUrl);
     mainPage.addHeading(new Heading("first", 1));
     mainPage.addHeading(new Heading("second", 1));
-    doReturn(mainPage).when(pageLoaderMock).loadPage(eq(targetUrl));
-    doReturn(subPage).when(pageLoaderMock).loadPage(eq(linkUrl));
+    subPage.addHeading(new Heading("sub 1", 1));
+    subPage.addHeading(new Heading("sub 2", 1));
+
+    doReturn(mainPage).when(pageLoaderMock).loadPage(targetUrl);
+    doReturn(subPage).when(pageLoaderMock).loadPage(linkUrl);
     Report report = crawler.crawlUrl(targetUrl, 2, visited);
 
     assertNotNull(report);
@@ -82,14 +85,15 @@ class WebCrawlerTest {
     assertTrue(visited.contains(targetUrl));
     assertTrue(visited.contains(linkUrl));
     verify(inputParametersMock, times(2)).getTargetLanguage();
-    verify(pageLoaderMock).loadPage(eq(targetUrl));
-    verify(pageLoaderMock).loadPage(eq(linkUrl));
-    verify(translationServiceMock, times(2)).translateText(any(String.class), any(Locale.class));
+    verify(pageLoaderMock).loadPage(targetUrl);
+    verify(pageLoaderMock).loadPage(linkUrl);
+    verify(translationServiceMock, times(4)).translateText(any(String.class), any(Locale.class));
     verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
   }
 
   @Test
   void crawl() throws Exception {
+    // TODO move test fixture in setUp
     URI aboutUrl = targetUrl.resolve("/about.html");
     URI termsUrl = targetUrl.resolve("/terms.html");
     Map<URI, Page> pages = Map.of(targetUrl, new Page(targetUrl),

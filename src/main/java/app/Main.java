@@ -1,5 +1,6 @@
 package app;
 
+import app.domain.InputParameters;
 import app.domain.PageLoader;
 import app.domain.Report;
 import app.domain.ReportService;
@@ -27,12 +28,12 @@ public class Main {
     }
   }
 
-  static void executeCommand(CommandLine cli) {
+  static void executeCommand(InputParameters commandInputParameters) {
     PageLoader webClient = new WebPageLoader();
     TranslationService deepl = new DeeplTranslationService();
-    WebCrawler crawler = new WebCrawler(cli, webClient, deepl);
+    WebCrawler crawler = new WebCrawler(commandInputParameters, webClient, deepl);
     Report report = crawler.crawl();
     ReportService markdownReport = new MarkdownReportService();
-    markdownReport.createReport(report, cli);
+    markdownReport.createReport(report, commandInputParameters);
   }
 }

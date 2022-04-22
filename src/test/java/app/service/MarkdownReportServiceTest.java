@@ -51,16 +51,16 @@ public class MarkdownReportServiceTest {
           <br>depth: 1
           <br>target language: en
           <br>report:
-          # Heading1
-          ## Heading2
-          ## Heading3
+          #--> Heading1
+          ##---> Heading2
+          ##----> Heading3
           <br>-->link to <https://www.google.at/>
           <br>----->broken link <https://www.qwant.com/>
           <br>
-          # Header A1
-          # Header A2
-          ## Header B1
-          ### Header C1
+          #-> Header A1
+          #-> Header A2
+          ##--> Header B1
+          ###--> Header C1
           <br>->link to <https://www.aau.at/>
           <br>--->broken link <https://stackoverflow.com/>
           <br>
@@ -106,14 +106,14 @@ public class MarkdownReportServiceTest {
 
     pageList.add(page1);
     pageList.add(page2);
-    headingList1.add(new Heading("Heading1", 1));
-    headingList1.add(new Heading("Heading2", 2));
-    headingList1.add(new Heading("Heading3", 2));
+    headingList1.add(new Heading("Heading1", 1, 2));
+    headingList1.add(new Heading("Heading2", 2, 3));
+    headingList1.add(new Heading("Heading3", 2, 4));
 
-    headingList2.add(new Heading("Header A1", 1));
-    headingList2.add(new Heading("Header A2", 1));
-    headingList2.add(new Heading("Header B1", 2));
-    headingList2.add(new Heading("Header C1", 3));
+    headingList2.add(new Heading("Header A1", 1, 1));
+    headingList2.add(new Heading("Header A2", 1, 1));
+    headingList2.add(new Heading("Header B1", 2, 2));
+    headingList2.add(new Heading("Header C1", 3, 2));
 
     googleLink.setDepth(2);
     qwantLink.setDepth(5);
@@ -131,7 +131,7 @@ public class MarkdownReportServiceTest {
   void testCreateMarkdownReport() {
 
     reportService.createReport(report, cli1);
-    char[] resultReport = new char[353];
+    char[] resultReport = new char[375];
     Assertions.assertDoesNotThrow(() -> {
       FileReader fileReader = new FileReader("google.md");
       fileReader.read(resultReport);
@@ -189,7 +189,7 @@ public class MarkdownReportServiceTest {
 
   @Test
   void createHeadingTest() {
-    assertEquals("# Header A1\n# Header A2\n## Header B1\n### Header C1\n", reportService.renderHeadings(headingList2));
+    assertEquals("#-> Header A1\n#-> Header A2\n##--> Header B1\n###--> Header C1\n", reportService.renderHeadings(headingList2));
   }
 
   @Test

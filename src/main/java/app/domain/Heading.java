@@ -26,6 +26,11 @@ public class Heading {
     this.originalText = originalText;
     this.rank = rank;
   }
+  public Heading(String originalText, int rank, int depth) {
+    this.originalText = originalText;
+    this.rank = rank;
+    this.depth = depth;
+  }
 
   public String getText() {
     return translatedText != null ? translatedText : originalText;

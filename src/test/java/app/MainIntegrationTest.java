@@ -44,7 +44,7 @@ class MainIntegrationTest {
   void executeCommandOnAAUwithDepth1() throws IOException {
     url = URI.create("https://www.aau.at");
     depth = 1;
-    targetLanguage = Locale.GERMAN;
+    targetLanguage = Locale.ENGLISH;
     Main.executeCommand(testInputParameters);
     Path reportFile = Path.of("aau.md");
     assertTrue(Files.exists(reportFile));

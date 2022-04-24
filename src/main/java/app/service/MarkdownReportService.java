@@ -76,7 +76,10 @@ public class MarkdownReportService implements ReportService {
     for (int i = 0; i < heading.getRank(); i++) {
       headingString.append('#');
     }
-    headingString.append(" ");
+    for(int i = 0; i < heading.getDepth();i++){
+      headingString.append('-');
+    }
+    headingString.append("> ");
     headingString.append(heading.getText());
     headingString.append("\n");
     return headingString.toString();

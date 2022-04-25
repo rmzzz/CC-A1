@@ -71,27 +71,26 @@ public class DeeplTranslationService implements TranslationService {
 
   HttpRequest createApiRequest(String originalText, Locale sourceLanguage, Locale targetLanguage) {
     String requestBody = Map.of("auth_key", apiKey,
-                    "target_lang", mapLocaleToLanguage(targetLanguage),
-                    "source_lang", mapLocaleToLanguage(sourceLanguage),
+                    "target_lang", mapLocaleToDeeplLanguage(targetLanguage),
+                    "source_lang", mapLocaleToDeeplLanguage(sourceLanguage),
                     "text", originalText)
             .entrySet().stream()
             .filter(entry -> entry.getValue() != null)
             .map(entry -> entry.getKey() + '=' + entry.getValue())
             .collect(Collectors.joining("&"));
-//            String.format("auth_key=%s&target_lang=%s&text=%s",
-//            apiKey, originalText, targetLanguage.getLanguage().toUpperCase(Locale.ROOT));
     return HttpRequest.newBuilder(URI.create("https://api-free.deepl.com/v2/translate?api_key=" + apiKey))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .build();
   }
 
-  String mapLocaleToLanguage(Locale locale) {
+  String mapLocaleToDeeplLanguage(Locale locale) {
     return locale != null ? locale.getLanguage().toUpperCase(Locale.ROOT) : null;
   }
 
   HttpResponse.BodySubscriber<JsonElement> getApiResponseBodyParser(HttpResponse.ResponseInfo responseInfo) {
-    return HttpResponse.BodySubscribers.mapping(HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8),
+    return HttpResponse.BodySubscribers.mapping(
+            HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8),
             JsonParser::parseString);
   }
 
@@ -101,8 +100,9 @@ public class DeeplTranslationService implements TranslationService {
       return defaultText;
     }
     JsonObject translation = translations.get(0).getAsJsonObject();
-    String text = translation.get("text").getAsString();
-    return text;
+    String translatedText = translation.get("text").getAsString();
+    logger.fine(() -> "translated text: " + translatedText);
+    return translatedText;
   }
 
 }

@@ -15,6 +15,11 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * PageLoader backed by Jsoup.
+ *
+ * @see <a href="https://jsoup.org/apidocs/">Jsoup API docs</a>
+ */
 public class JsoupPageLoader implements PageLoader {
   static final Logger logger = Logger.getLogger(JsoupPageLoader.class.getName());
 
@@ -49,9 +54,9 @@ public class JsoupPageLoader implements PageLoader {
 
   void updateHeaders(Page page, Document document) {
     Elements headerElements = document.select("h1,h2,h3,h4,h5,h6");
-    for (var h : headerElements) {
-      int rank = parseHeadingRank(h);
-      String text = h.text();
+    for (var header : headerElements) {
+      int rank = parseHeadingRank(header);
+      String text = header.text();
       page.addHeading(new Heading(text, rank));
     }
   }
@@ -66,9 +71,9 @@ public class JsoupPageLoader implements PageLoader {
 
   void updateLinks(Page page, Document document) {
     Elements linkElements = document.select("a");
-    for (var a : linkElements) {
-      String text = a.text();
-      String href = a.attr("abs:href");
+    for (var link : linkElements) {
+      String text = link.text();
+      String href = link.attr("abs:href");
       if (!href.startsWith("http")) {
         logger.finest(() -> "skipping non-http link " + href);
         continue;

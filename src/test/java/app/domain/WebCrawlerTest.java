@@ -129,8 +129,7 @@ class WebCrawlerTest {
   }
 
   @Test
-  void crawl() throws Exception {
-    // TODO move test fixture in setUp
+  void crawl() {
     URI aboutUrl = targetUrl.resolve("/about.html");
     URI termsUrl = targetUrl.resolve("/terms.html");
     Map<URI, Page> pages = Map.of(targetUrl, new Page(targetUrl),

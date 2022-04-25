@@ -19,7 +19,7 @@ class CommandLineTest {
 
   @BeforeEach
   void setUp() {
-    cli = new CommandLine();
+    cli = CommandLine.fromCommandLine();
     commands1 = new String[6];
     commands1[0] = "-d";
     commands1[1] = "3";
@@ -102,9 +102,9 @@ class CommandLineTest {
 
     assertEquals("""
             Input parameters:
-              -u <url>, --url=<url> - URL to crawl, e.g. "https://www.aau.at" or just "www.aau.at"
-              -d <depth>, --depth=<depth> - the depth of websites to crawl, e.g. 3
-              -l <lang>, --lang=<lang> - target language as IETF BCP 47 language tag, e.g. "de-AT" or "de"
+              -u <url>, --url <url> - URL to crawl, e.g. "https://www.aau.at" or just "www.aau.at"
+              -d <depth>, --depth <depth> - the depth of websites to crawl, e.g. 3
+              -l <lang>, --lang <lang> - target language as IETF BCP 47 language tag, e.g. "de-AT" or "de"
             """, usage);
   }
 }

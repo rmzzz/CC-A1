@@ -51,4 +51,17 @@ class MainIntegrationTest {
     String report = Files.readString(reportFile);
     System.out.println(report);
   }
+
+  @Test
+  void executeCommandOnAAUwithRU() throws IOException {
+    url = URI.create("https://www.aau.at");
+    depth = 1;
+    targetLanguage = new Locale("ru");
+    Main.executeCommand(testInputParameters);
+    Path reportFile = Path.of("aau.md");
+    assertTrue(Files.exists(reportFile));
+    String report = Files.readString(reportFile);
+    System.out.println(report);
+  }
+
 }

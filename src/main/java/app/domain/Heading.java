@@ -48,8 +48,8 @@ public class Heading {
     this.depth = depth;
   }
 
-  public void translate(TranslationService translationService, Locale targetLanguage) {
-    translatedText = translationService.translateText(originalText, targetLanguage);
+  public void translate(TranslationService translationService, Locale sourceLanguage, Locale targetLanguage) {
+    translatedText = translationService.translateText(originalText, sourceLanguage, targetLanguage);
   }
 
 }

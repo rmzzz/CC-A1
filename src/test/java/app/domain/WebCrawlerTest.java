@@ -21,6 +21,7 @@ class WebCrawlerTest {
   URI targetUrl;
   int targetDepth;
   Locale targetLocale;
+  Locale sourceLanguage;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -28,13 +29,14 @@ class WebCrawlerTest {
     targetUrl = new URI("http://localhost");
     targetDepth = 3;
     targetLocale = Locale.GERMAN;
+    sourceLanguage = Locale.ENGLISH;
     when(inputParametersMock.getTargetLanguage()).thenReturn(targetLocale);
     when(inputParametersMock.getUrl()).thenReturn(targetUrl);
     when(inputParametersMock.getDepth()).thenReturn(targetDepth);
 
     pageLoaderMock = mock(PageLoader.class);
     translationServiceMock = mock(TranslationService.class);
-    when(translationServiceMock.translateText(any(String.class), any(Locale.class))).then(i -> i.getArgument(0));
+    when(translationServiceMock.translateText(any(String.class), any(Locale.class), any(Locale.class))).then(i -> i.getArgument(0));
     crawler = new WebCrawler(inputParametersMock, pageLoaderMock, translationServiceMock);
   }
 
@@ -47,6 +49,7 @@ class WebCrawlerTest {
   void crawlUrlSingleDepth() throws Exception {
     Set<URI> visited = new HashSet<>();
     Page page = new Page(targetUrl);
+    page.language = sourceLanguage;
     Heading h1 = new Heading("h1", 1);
     page.addHeading(h1);
     Heading h2 = new Heading("h2", 2);
@@ -60,8 +63,8 @@ class WebCrawlerTest {
     verify(inputParametersMock).getTargetLanguage();
     verify(inputParametersMock).getDepth();
     verify(pageLoaderMock).loadPage(targetUrl);
-    verify(translationServiceMock).translateText(h1.originalText, targetLocale);
-    verify(translationServiceMock).translateText(h2.originalText, targetLocale);
+    verify(translationServiceMock).translateText(h1.originalText, sourceLanguage, targetLocale);
+    verify(translationServiceMock).translateText(h2.originalText, sourceLanguage, targetLocale);
     verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
   }
 
@@ -70,8 +73,10 @@ class WebCrawlerTest {
     URI linkUrl = targetUrl.resolve("/about.html");
     Set<URI> visited = new HashSet<>();
     Page mainPage = new Page(targetUrl);
+    mainPage.language = sourceLanguage;
     mainPage.addLink(new Link(linkUrl, "About", false));
     Page subPage = new Page(linkUrl);
+    subPage.language = sourceLanguage;
     mainPage.addHeading(new Heading("first", 1));
     mainPage.addHeading(new Heading("second", 1));
     subPage.addHeading(new Heading("sub 1", 1));
@@ -89,7 +94,7 @@ class WebCrawlerTest {
     verify(inputParametersMock, times(2)).getDepth();
     verify(pageLoaderMock).loadPage(targetUrl);
     verify(pageLoaderMock).loadPage(linkUrl);
-    verify(translationServiceMock, times(4)).translateText(any(String.class), any(Locale.class));
+    verify(translationServiceMock, times(4)).translateText(any(String.class), any(Locale.class), any(Locale.class));
     verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
   }
 
@@ -108,6 +113,7 @@ class WebCrawlerTest {
     pages.get(targetUrl).headings.add(new Heading("h1", 1));
     pages.get(targetUrl).headings.add(new Heading("h2", 2));
     pages.get(targetUrl).headings.add(new Heading("h3", 3));
+    pages.values().forEach(p -> p.language = sourceLanguage);
     when(pageLoaderMock.loadPage(any(URI.class))).then(i -> pages.get((URI)i.getArgument(0)));
 
     Report report = crawler.crawl();
@@ -119,7 +125,7 @@ class WebCrawlerTest {
     verify(pageLoaderMock).loadPage(eq(targetUrl));
     verify(pageLoaderMock).loadPage(eq(aboutUrl));
     verify(pageLoaderMock).loadPage(eq(termsUrl));
-    verify(translationServiceMock, times(3)).translateText(any(String.class), eq(Locale.GERMAN));
+    verify(translationServiceMock, times(3)).translateText(any(String.class), eq(sourceLanguage), eq(Locale.GERMAN));
     verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
   }
 }

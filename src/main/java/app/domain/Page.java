@@ -37,7 +37,7 @@ public class Page {
 
   public Page translate(TranslationService translationService, Locale targetLanguage) {
     for (Heading heading : headings) {
-      heading.translate(translationService, targetLanguage);
+      heading.translate(translationService, language, targetLanguage);
     }
     return this;
   }

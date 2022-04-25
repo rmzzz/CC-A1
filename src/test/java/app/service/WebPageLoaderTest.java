@@ -1,6 +1,7 @@
 package app.service;
 
 import app.domain.Page;
+import app.exception.BrokenLinkException;
 import com.sun.net.httpserver.HttpServer;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,13 +24,13 @@ import static org.mockito.Mockito.*;
 
 class WebPageLoaderTest {
 
-  WebPageLoader pageLoader;
+  JsoupPageLoader pageLoader;
   Page page;
   Document document;
 
   @BeforeEach
   void setUp() {
-    pageLoader = new WebPageLoader();
+    pageLoader = new JsoupPageLoader();
     document = mock(Document.class);
     page = new Page(URI.create("http://localhost"));
   }
@@ -62,6 +63,14 @@ class WebPageLoaderTest {
       assertEquals(Locale.forLanguageTag("de-AT"), page.getLanguage());
       assertEquals(3, page.getHeadings().size());
       assertEquals(1, page.getLinks().size());
+    });
+  }
+
+  @Test
+  void loadBrokenLink() throws Throwable {
+    testWithHttpServer("", () -> {
+      assertThrows(BrokenLinkException.class,
+              () -> pageLoader.loadPage(URI.create("http://localhost:8888/broken-link.html")));
     });
   }
 

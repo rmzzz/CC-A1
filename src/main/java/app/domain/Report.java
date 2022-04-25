@@ -18,9 +18,11 @@ public class Report {
   Page mainPage;
   Map<URI, Page> subPages = new LinkedHashMap<>();
 
-  public Report(Page mainPage, int maxDepth) {
+  public Report(Page mainPage, int maxDepth, Locale targetLanguage) {
     this.mainPage = mainPage;
     this.maxDepth = maxDepth;
+    this.sourceLanguage = mainPage.language;
+    this.targetLanguage = targetLanguage;
   }
 
   public Report merge(Report report) {
@@ -65,5 +67,9 @@ public class Report {
 
   public Locale getTargetLanguage() {
     return targetLanguage;
+  }
+
+  public int getDepth() {
+    return maxDepth;
   }
 }

@@ -47,13 +47,13 @@ class DeeplTranslationServiceTest {
 
   @Test
   void translateText() {
-    String text = deepl.translateText("Hello World!", Locale.GERMAN);
+    String text = deepl.translateText("Hello World!", Locale.ENGLISH, Locale.GERMAN);
     assertEquals("Hallo Welt!", text);
   }
 
   @Test
   void createApiRequest() {
-    HttpRequest apiRequest = deepl.createApiRequest("test", Locale.GERMAN);
+    HttpRequest apiRequest = deepl.createApiRequest("test", Locale.ENGLISH, Locale.GERMAN);
     assertEquals("POST", apiRequest.method());
     assertEquals("https://api-free.deepl.com/v2/translate?api_key=test", apiRequest.uri().toString());
     assertTrue(apiRequest.bodyPublisher().isPresent());

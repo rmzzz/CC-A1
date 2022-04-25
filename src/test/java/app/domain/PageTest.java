@@ -40,13 +40,14 @@ class PageTest {
   @Test
   void translate() {
     page.addHeading(new Heading("one", 1));
+    page.language = Locale.ENGLISH;
     TranslationService translationServiceMock = mock(TranslationService.class);
-    doReturn("ein").when(translationServiceMock).translateText("one", Locale.GERMAN);
+    doReturn("ein").when(translationServiceMock).translateText("one", Locale.ENGLISH, Locale.GERMAN);
 
     page.translate(translationServiceMock, Locale.GERMAN);
     assertEquals("ein", page.getHeadings().get(0).getText());
 
-    verify(translationServiceMock).translateText("one", Locale.GERMAN);
+    verify(translationServiceMock).translateText("one", Locale.ENGLISH, Locale.GERMAN);
     verifyNoMoreInteractions(translationServiceMock);
   }
 }

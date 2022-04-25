@@ -1,5 +1,5 @@
 package app.domain;
 
 public interface ReportService {
-  void createReport(Report targetReport, InputParameters inputParameters);
+  void createReport(Report targetReport);
 }

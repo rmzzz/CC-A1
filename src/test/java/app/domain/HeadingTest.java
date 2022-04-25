@@ -29,12 +29,12 @@ class HeadingTest {
   @Test
   void translate() {
     TranslationService translationServiceMock = mock(TranslationService.class);
-    doReturn("Test").when(translationServiceMock).translateText("test", Locale.GERMAN);
+    doReturn("Test").when(translationServiceMock).translateText("test", Locale.ENGLISH, Locale.GERMAN);
 
-    heading.translate(translationServiceMock, Locale.GERMAN);
+    heading.translate(translationServiceMock, Locale.ENGLISH, Locale.GERMAN);
     assertEquals("Test", heading.getText());
 
-    verify(translationServiceMock).translateText("test", Locale.GERMAN);
+    verify(translationServiceMock).translateText("test", Locale.ENGLISH, Locale.GERMAN);
     verifyNoMoreInteractions(translationServiceMock);
 
   }

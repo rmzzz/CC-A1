@@ -4,6 +4,7 @@ import app.domain.Heading;
 import app.domain.Link;
 import app.domain.Page;
 import app.domain.PageLoader;
+import app.exception.BrokenLinkException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,8 +15,8 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WebPageLoader implements PageLoader {
-  static Logger logger = Logger.getLogger("app.service.WebPageLoader");
+public class JsoupPageLoader implements PageLoader {
+  static final Logger logger = Logger.getLogger(JsoupPageLoader.class.getName());
 
   @Override
   public Page loadPage(URI pageUrl) {
@@ -34,7 +35,7 @@ public class WebPageLoader implements PageLoader {
       return document;
     } catch (IOException ex) {
       logger.log(Level.WARNING, "Error loading URL " + url, ex);
-      return null;
+      throw new BrokenLinkException(url, ex);
     }
   }
 

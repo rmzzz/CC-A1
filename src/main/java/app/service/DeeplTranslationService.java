@@ -1,6 +1,7 @@
 package app.service;
 
 import app.domain.TranslationService;
+import app.exception.ConfigurationException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -14,8 +15,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * TranslationService backed with DeepL API free web service.
@@ -29,6 +32,11 @@ public class DeeplTranslationService implements TranslationService {
   HttpClient httpClient;
 
   public DeeplTranslationService() {
+    apiKey = getApiKey();
+    httpClient = HttpClient.newHttpClient();
+  }
+
+  static String getApiKey() {
     String configApiKey = System.getProperty("apiKey");
     if (configApiKey == null || configApiKey.isBlank()) {
       String inputApiKey = null;
@@ -37,20 +45,18 @@ public class DeeplTranslationService implements TranslationService {
         inputApiKey = console.readLine("DeepL API Key: ");
       }
       if (inputApiKey == null || inputApiKey.isBlank()) {
-        throw new RuntimeException("No API Key provided!");
+        throw new ConfigurationException("No API Key provided!");
       }
-      apiKey = inputApiKey;
-    } else {
-      apiKey = configApiKey;
+      return inputApiKey;
     }
-    httpClient = HttpClient.newHttpClient();
+    return configApiKey;
   }
 
   @Override
-  public String translateText(String originalText, Locale targetLanguage) {
+  public String translateText(String originalText, Locale sourceLanguage, Locale targetLanguage) {
     String text = originalText;
     try {
-      HttpRequest request = createApiRequest(originalText, targetLanguage);
+      HttpRequest request = createApiRequest(originalText, sourceLanguage, targetLanguage);
       HttpResponse<JsonElement> httpResponse = httpClient.send(request, this::getApiResponseBodyParser);
       JsonElement body = httpResponse.body();
       text = extractTextFromApiResponse(body, originalText);
@@ -63,17 +69,28 @@ public class DeeplTranslationService implements TranslationService {
     return text;
   }
 
-  HttpRequest createApiRequest(String originalText, Locale targetLanguage) {
-    String requestBody = String.format("auth_key=%s&text=%s&target_lang=%s",
-            apiKey, originalText, targetLanguage.getLanguage().toUpperCase(Locale.ROOT));
+  HttpRequest createApiRequest(String originalText, Locale sourceLanguage, Locale targetLanguage) {
+    String requestBody = Map.of("auth_key", apiKey,
+                    "target_lang", mapLocaleToLanguage(targetLanguage),
+                    "source_lang", mapLocaleToLanguage(sourceLanguage),
+                    "text", originalText)
+            .entrySet().stream()
+            .filter(entry -> entry.getValue() != null)
+            .map(entry -> entry.getKey() + '=' + entry.getValue())
+            .collect(Collectors.joining("&"));
+//            String.format("auth_key=%s&target_lang=%s&text=%s",
+//            apiKey, originalText, targetLanguage.getLanguage().toUpperCase(Locale.ROOT));
     return HttpRequest.newBuilder(URI.create("https://api-free.deepl.com/v2/translate?api_key=" + apiKey))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .build();
   }
 
+  String mapLocaleToLanguage(Locale locale) {
+    return locale != null ? locale.getLanguage().toUpperCase(Locale.ROOT) : null;
+  }
+
   HttpResponse.BodySubscriber<JsonElement> getApiResponseBodyParser(HttpResponse.ResponseInfo responseInfo) {
-    //return HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
     return HttpResponse.BodySubscribers.mapping(HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8),
             JsonParser::parseString);
   }

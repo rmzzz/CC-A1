@@ -1,9 +1,12 @@
 package app.domain;
 
+import app.exception.BrokenLinkException;
+
 import java.net.URI;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class WebCrawler {
@@ -45,16 +48,25 @@ public class WebCrawler {
   Report translatePage(Page page) {
     Locale targetLanguage = inputParameters.getTargetLanguage();
     Page translatedPage = page.translate(translationService, targetLanguage);
-    Report resultReport = new Report(translatedPage, inputParameters.getDepth());
+    Report resultReport = new Report(translatedPage, inputParameters.getDepth(), targetLanguage);
     logger.fine(() -> "translated page " + translatedPage.pageUrl);
     return resultReport;
   }
 
-  Report crawlSubPages(Page page, Report resultReport, int subDepth, Set<URI> visitedUrls) {
-    return page.getLinks().stream()
-            .map(Link::getUrl)
-            .filter(uri -> !visitedUrls.contains(uri))
-            .map(uri -> crawlUrl(uri, subDepth, visitedUrls))
-            .reduce(resultReport, Report::merge);
+  Report crawlSubPages(Page page, Report initialReport, int subDepth, Set<URI> visitedUrls) {
+    Report resultReport = initialReport;
+    for (Link link : page.getLinks()) {
+      URI uri = link.getUrl();
+      if (!visitedUrls.contains(uri)) {
+        try {
+          Report report = crawlUrl(uri, subDepth, visitedUrls);
+          resultReport = resultReport.merge(report);
+        } catch (BrokenLinkException ex) {
+          logger.log(Level.FINE, "Broken link: " + uri, ex);
+          link.setBroken(true);
+        }
+      }
+    }
+    return resultReport;
   }
 }

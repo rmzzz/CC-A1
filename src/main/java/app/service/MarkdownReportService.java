@@ -10,45 +10,48 @@ import app.domain.ReportService;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Logger;
 
 public class MarkdownReportService implements ReportService {
 
   private static final String MARK_DOWN_BREAK = "<br>";
-  static Logger reportServiceLogger = Logger.getLogger("app.service.MarkDownReportService");
+  static final Logger logger = Logger.getLogger("app.service.MarkDownReportService");
 
   @Override
-  public void createReport(Report targetReport, InputParameters inputParameters) {
-    String reportString = renderReport(targetReport, inputParameters);
-    createReportFile(reportString, renderFileName(inputParameters));
+  public void createReport(Report targetReport) {
+    String reportString = renderReport(targetReport);
+    createReportFile(reportString, renderFileName(targetReport));
   }
 
-  String renderReport(Report targetReport, InputParameters inputParameters){
+  String renderReport(Report targetReport){
     String reportString = "";
-    reportString += renderMetaInformation(inputParameters);
+    reportString += renderMetaInformation(targetReport);
     reportString += renderPageContents(targetReport.getPageList());
     return reportString;
   }
 
   void createReportFile(String reportString, String fileName){
-    try (FileWriter fileWriter = new FileWriter(fileName)) {
+    try (FileWriter fileWriter = new FileWriter(fileName, StandardCharsets.UTF_8)) {
       fileWriter.write(reportString);
     } catch (IOException ioException) {
-      reportServiceLogger.warning("An error occurred during file writing.\n");
+      logger.warning("An error occurred during file writing.");
     }
+    logger.info("Report file created: " + fileName);
   }
 
-  String renderFileName(InputParameters inputParameters){
-    String filename = extractDomainNameFromURL(inputParameters.getUrl()) + ".md";
+  String renderFileName(Report targetReport){
+    String filename = extractDomainNameFromURL(targetReport.getInputUrl()) + ".md";
     return filename;
   }
 
-  String renderMetaInformation(InputParameters inputParameters) {
+  String renderMetaInformation(Report targetReport) {
     return "Input:\n"
-            + MARK_DOWN_BREAK + "<" + inputParameters.getUrl() + ">\n"
-            + MARK_DOWN_BREAK + "depth: " + inputParameters.getDepth() + "\n"
-            + MARK_DOWN_BREAK + "target language: " + inputParameters.getTargetLanguage() + "\n"
+            + MARK_DOWN_BREAK + "<" + targetReport.getInputUrl() + ">\n"
+            + MARK_DOWN_BREAK + "depth: " + targetReport.getDepth() + "\n"
+            + MARK_DOWN_BREAK + "target language: " + targetReport.getTargetLanguage() + "\n"
+            + MARK_DOWN_BREAK + "source language: " + targetReport.getSourceLanguage() + "\n"
             + MARK_DOWN_BREAK + "report:\n";
   }
 

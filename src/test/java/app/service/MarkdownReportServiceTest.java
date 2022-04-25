@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +37,8 @@ public class MarkdownReportServiceTest {
   Link aauLink;
   Link stackOverFlowLink;
   Link githubLink;
-  Report report;
+  Report report1;
+  Report report2;
   Page page1;
   Page page2;
   List<Page> pageList;
@@ -50,6 +53,7 @@ public class MarkdownReportServiceTest {
           <br><https://www.google.at/>
           <br>depth: 1
           <br>target language: en
+          <br>source language: null
           <br>report:
           #--> Heading1
           ##---> Heading2
@@ -66,6 +70,7 @@ public class MarkdownReportServiceTest {
           <br>
           """;
 
+
   @BeforeEach
   void setUp() throws Exception {
     reportService = new MarkdownReportService();
@@ -81,7 +86,8 @@ public class MarkdownReportServiceTest {
     aauLink = new Link(aauURL, "AAU", false);
     stackOverFlowLink = new Link(stackOverFlowURL, "Stackoverflow", true);
     githubLink = new Link(githubURL, "GitHub", false);
-    report = mock(Report.class);
+    report1 = mock(Report.class);
+    report2 = mock(Report.class);
     page1 = mock(Page.class);
     page2 = mock(Page.class);
     pageList = new LinkedList<>();
@@ -98,7 +104,13 @@ public class MarkdownReportServiceTest {
     when(cli2.getDepth()).thenReturn(3);
     when(cli2.getTargetLanguage()).thenReturn(Locale.FRENCH);
 
-    when(report.getPageList()).thenReturn(pageList);
+    when(report1.getPageList()).thenReturn(pageList);
+    when(report1.getInputUrl()).thenReturn(googleURL);
+    when(report1.getDepth()).thenReturn(1);
+    when(report1.getTargetLanguage()).thenReturn(Locale.ENGLISH);
+    when(report2.getInputUrl()).thenReturn(qwantURL);
+    when(report2.getDepth()).thenReturn(3);
+    when(report2.getTargetLanguage()).thenReturn(Locale.FRENCH);
     when(page1.getHeadings()).thenReturn(headingList1);
     when(page1.getLinks()).thenReturn(linksList1);
     when(page2.getHeadings()).thenReturn(headingList2);
@@ -130,31 +142,29 @@ public class MarkdownReportServiceTest {
   @Test
   void testCreateMarkdownReport() {
 
-    reportService.createReport(report, cli1);
-    char[] resultReport = new char[375];
+    reportService.createReport(report1);
+    String[] resultReports = new String[1];
     Assertions.assertDoesNotThrow(() -> {
-      FileReader fileReader = new FileReader("google.md");
-      fileReader.read(resultReport);
-      fileReader.close();
+      resultReports[0] = Files.readString(Paths.get("google.md"));
 
       File resultFile = new File("google.md");
       if (!resultFile.delete()) {
         throw new IOException();
       }
     });
-    String resultReportString = new String(resultReport);
-    Assertions.assertEquals(expectedResult, resultReportString);
+    Assertions.assertEquals(expectedResult, resultReports[0]);
 
-    verify(cli1, times(2)).getUrl();
-    verify(cli1, times(1)).getDepth();
-    verify(cli1, times(1)).getTargetLanguage();
+    verify(report1, times(2)).getInputUrl();
+    verify(report1, times(1)).getDepth();
+    verify(report1, times(1)).getTargetLanguage();
+    verify(report1, times(1)).getSourceLanguage();
 
-    verify(report, times(1)).getPageList();
+    verify(report1, times(1)).getPageList();
     verify(page1, times(1)).getLinks();
     verify(page1, times(1)).getHeadings();
     verify(page2, times(1)).getLinks();
     verify(page2, times(1)).getHeadings();
-    verifyNoMoreInteractions(report, page1, page2, cli1);
+    verifyNoMoreInteractions(report1, page1, page2, cli1);
   }
 
   @Test
@@ -204,13 +214,15 @@ public class MarkdownReportServiceTest {
             <br><https://www.qwant.com/>
             <br>depth: 3
             <br>target language: fr
+            <br>source language: null
             <br>report:
             """;
-    assertEquals(expected, reportService.renderMetaInformation(cli2));
+    assertEquals(expected, reportService.renderMetaInformation(report2));
 
-    verify(cli2, times(1)).getUrl();
-    verify(cli2, times(1)).getDepth();
-    verify(cli2, times(1)).getTargetLanguage();
-    verifyNoMoreInteractions(cli2);
+    verify(report2, times(1)).getInputUrl();
+    verify(report2, times(1)).getDepth();
+    verify(report2, times(1)).getTargetLanguage();
+    verify(report2, times(1)).getSourceLanguage();
+    verifyNoMoreInteractions(report2);
   }
 }

@@ -1,9 +1,11 @@
 package app.domain;
 
+import app.exception.BrokenLinkException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Locale;
@@ -85,6 +87,7 @@ class WebCrawlerTest {
     doReturn(mainPage).when(pageLoaderMock).loadPage(targetUrl);
     doReturn(subPage).when(pageLoaderMock).loadPage(linkUrl);
     Report report = crawler.crawlUrl(targetUrl, 2, visited);
+    assertFalse(report.mainPage.links.get(0).isBroken());
 
     assertNotNull(report);
     assertEquals(2, visited.size());
@@ -95,6 +98,33 @@ class WebCrawlerTest {
     verify(pageLoaderMock).loadPage(targetUrl);
     verify(pageLoaderMock).loadPage(linkUrl);
     verify(translationServiceMock, times(4)).translateText(any(String.class), any(Locale.class), any(Locale.class));
+    verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
+  }
+
+  @Test
+  void crawlUrlWithBrokenLink() throws Exception {
+    URI linkUrl = targetUrl.resolve("/about.html");
+    Set<URI> visited = new HashSet<>();
+    Page mainPage = new Page(targetUrl);
+    mainPage.language = sourceLanguage;
+    mainPage.addLink(new Link(linkUrl, "About", false));
+    mainPage.addHeading(new Heading("first", 1));
+    mainPage.addHeading(new Heading("second", 1));
+
+    doReturn(mainPage).when(pageLoaderMock).loadPage(targetUrl);
+    doThrow(new BrokenLinkException(linkUrl, new IOException())).when(pageLoaderMock).loadPage(linkUrl);
+    Report report = crawler.crawlUrl(targetUrl, 2, visited);
+    assertTrue(report.mainPage.links.get(0).isBroken());
+
+    assertNotNull(report);
+    assertEquals(2, visited.size());
+    assertTrue(visited.contains(targetUrl));
+    assertTrue(visited.contains(linkUrl));
+    verify(inputParametersMock, times(1)).getTargetLanguage();
+    verify(inputParametersMock, times(1)).getDepth();
+    verify(pageLoaderMock).loadPage(targetUrl);
+    verify(pageLoaderMock).loadPage(linkUrl);
+    verify(translationServiceMock, times(2)).translateText(any(String.class), any(Locale.class), any(Locale.class));
     verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
   }
 
@@ -114,7 +144,7 @@ class WebCrawlerTest {
     pages.get(targetUrl).headings.add(new Heading("h2", 2));
     pages.get(targetUrl).headings.add(new Heading("h3", 3));
     pages.values().forEach(p -> p.language = sourceLanguage);
-    when(pageLoaderMock.loadPage(any(URI.class))).then(i -> pages.get((URI)i.getArgument(0)));
+    when(pageLoaderMock.loadPage(any(URI.class))).then(i -> pages.get((URI) i.getArgument(0)));
 
     Report report = crawler.crawl();
 

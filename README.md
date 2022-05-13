@@ -1,5 +1,7 @@
-# CC-A1
-AAU Klagenfurt - Clean Code - Assignment 1
+# CC-A2
+AAU Klagenfurt - Clean Code - Assignment 2
+
+> **Note:** If you are looking for Assignment 1, it is tagged as [v1.0.0](https://github.com/rmzzz/CC-A1/tree/v1.0.0)
 
 ## Pre-Requirements
 * Java 17

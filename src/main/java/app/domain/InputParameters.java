@@ -1,12 +1,18 @@
 package app.domain;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Locale;
 
 public interface InputParameters {
-    URI getUrl();
+  @Deprecated(forRemoval = true)
+  URI getUrl();
 
-    int getDepth();
+  default List<URI> getUrls() {
+    return List.of(getUrl());
+  }
 
-    Locale getTargetLanguage();
+  int getDepth();
+
+  Locale getTargetLanguage();
 }

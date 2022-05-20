@@ -4,6 +4,8 @@ import app.domain.InputParameters;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
@@ -15,6 +17,8 @@ public class CommandLine implements InputParameters {
   static Logger commandLineLogger = Logger.getLogger("app.service.CommandLine");
 
   private URI url;
+
+  private List<URI> urlList;
   private int depth;
   private Locale targetLanguage;
   private boolean valid;
@@ -24,44 +28,77 @@ public class CommandLine implements InputParameters {
 
   public static CommandLine fromCommandLine(String... args) {
     CommandLine commandLine = new CommandLine();
-
     commandLine.setDefaultValues();
+    parseArguments(commandLine, args);
+    return commandLine;
+  }
+
+  private static void parseArguments(CommandLine commandLine, String[] args){
     boolean urlFlag = false;
     boolean depthFlag = false;
     boolean langFlag = false;
 
-    if (args.length % 2 != 0) {
-      commandLine.valid = false;
-      return commandLine;
-    }
     for (int i = 0; i < args.length; i = i + 2) {
-      try {
-        if (commandLine.checkArgument(args[i], PARAM_URL)) {
-          urlFlag = commandLine.checkFlag(urlFlag);
-          commandLine.url = new URI(args[i + 1]);
-        } else if (commandLine.checkArgument(args[i], PARAM_DEPTH)) {
-          depthFlag = commandLine.checkFlag(depthFlag);
-          commandLine.depth = Integer.parseInt(args[i + 1]);
-          commandLine.checkForValidDepth();
-        } else if (commandLine.checkArgument(args[i], PARAM_LANGUAGE)) {
-          langFlag = commandLine.checkFlag(langFlag);
-          commandLine.targetLanguage = new Locale(args[i + 1]);
-        } else {
-          commandLine.valid = false;
-        }
-      } catch (URISyntaxException exception) {
-        commandLineLogger.warning("Error when trying to parse URL from command line");
+      if (isArgumentAFlagOfType(args[i], PARAM_URL)) {
+        urlFlag = commandLine.checkFlag(urlFlag);
+        i += parseURLandReturnNumberOfURLs(commandLine, args, i) - 1; //-1 to compensate for the usual increment by 2 which shouldn't happen after URL parsing
+
+      } else if (isArgumentAFlagOfType(args[i], PARAM_DEPTH)) {
+        depthFlag = commandLine.checkFlag(depthFlag);
+        parseDepth(commandLine, args[i+1]);
+
+      } else if (isArgumentAFlagOfType(args[i], PARAM_LANGUAGE)) {
+        langFlag = commandLine.checkFlag(langFlag);
+        parseLanguage(commandLine, args[i+1]);
+
+      } else {
+        commandLine.valid = false;
       }
     }
-    return commandLine;
+  }
+
+
+
+  private static int parseURLandReturnNumberOfURLs(CommandLine commandLine, String[] args, int urlFlagIndex){
+
+    try {
+      commandLine.url = new URI(args[urlFlagIndex + 1]);//TODO: deprecate
+      urlFlagIndex++;
+
+      while(urlFlagIndex < args.length && !isArgumentAnyFlag(args[urlFlagIndex])){
+        commandLine.urlList.add(new URI(args[urlFlagIndex]));
+        urlFlagIndex++;
+      }
+
+    } catch (URISyntaxException exception) {
+      commandLineLogger.warning("Error when trying to parse URL from command line");
+    }
+    return commandLine.urlList.size();
+  }
+
+  private static void parseLanguage(CommandLine commandLine,String langString){
+    commandLine.targetLanguage = new Locale(langString);
+  }
+
+  private static void parseDepth(CommandLine commandLine,String depthString){
+    commandLine.depth = Integer.parseInt(depthString);
+    commandLine.checkForValidDepth();
+  }
+
+  private static boolean isArgumentAnyFlag(String argument){
+    return isArgumentAFlagOfType(argument, PARAM_URL)
+            || isArgumentAFlagOfType(argument, PARAM_DEPTH)
+            || isArgumentAFlagOfType(argument, PARAM_LANGUAGE);
   }
 
   private void setDefaultValues() {
     valid = true;
     depth = 2;
     targetLanguage = new Locale("en");
+    urlList = new ArrayList<>();
     try {
       url = new URI("http://histo.io/");
+      //urlList.add(url);
     } catch (URISyntaxException e) {
       commandLineLogger.warning("Error while parsing. Default URL could not be parsed.");
       throw new RuntimeException(e);
@@ -81,8 +118,8 @@ public class CommandLine implements InputParameters {
     }
   }
 
-  private boolean checkArgument(String argument, String commandName) {
-    return (argument.equals("--" + commandName) || argument.equals("-" + commandName.charAt(0)));
+  private static boolean isArgumentAFlagOfType(String argument, String flagType) {
+    return (argument.equals("--" + flagType) || argument.equals("-" + flagType.charAt(0)));
   }
 
   @Override

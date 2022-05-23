@@ -5,3 +5,10 @@
 - command line parser -> Nermin
 - main method
 - setup github build & sonarcould -> Ramiz
+
+Assignment 2:
+- command line parsing extension -> Nermin
+- concurrency -> Ramiz
+- exception handling
+- report extension for error reporting -> Nermin
+- boundaries check

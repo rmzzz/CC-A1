@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,7 +57,7 @@ class CommandLineTest {
   void commandLineTestPartly() throws URISyntaxException {
     CommandLine commandLine = CommandLine.fromCommandLine(commands2);
     assertEquals(2, commandLine.getDepth());
-    assertEquals(new Locale("en"), commandLine.getTargetLanguage());
+    assertNull(commandLine.getTargetLanguage());
     assertEquals(new URI("https://campus.aau.at/home"), commandLine.getUrl());
     assertTrue(commandLine.isValid());
   }
@@ -65,8 +66,8 @@ class CommandLineTest {
   void commandLineTestTooManyArguments() throws URISyntaxException {
     CommandLine commandLine = CommandLine.fromCommandLine(commands3);
     assertEquals(2, commandLine.getDepth());
-    assertEquals(new Locale("en"), commandLine.getTargetLanguage());
-    assertEquals(new URI("www.stackoverflow.com"), commandLine.getUrl());
+    assertNull(commandLine.getTargetLanguage());
+    assertEquals(new URI("www.aau.at"), commandLine.getUrls().get(0));
     assertFalse(commandLine.isValid());
   }
 
@@ -77,18 +78,13 @@ class CommandLineTest {
   }
 
   @Test
-  void getUrl() throws URISyntaxException {
-    assertEquals(new URI("http://histo.io/"), cli.getUrl());
-  }
-
-  @Test
   void getDepth() {
     assertEquals(2, cli.getDepth());
   }
 
   @Test
   void getTargetLanguage() {
-    assertEquals(new Locale("en"), cli.getTargetLanguage());
+    assertNull(cli.getTargetLanguage());
   }
 
   @Test

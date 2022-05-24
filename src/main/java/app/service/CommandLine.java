@@ -5,6 +5,7 @@ import app.domain.InputParameters;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -24,11 +25,13 @@ public class CommandLine implements InputParameters {
   private boolean valid;
 
   private CommandLine() {
+    valid = true;
+    urlList = new ArrayList<>();
+    depth = 2;
   }
 
   public static CommandLine fromCommandLine(String... args) {
     CommandLine commandLine = new CommandLine();
-    commandLine.setDefaultValues();
     parseArguments(commandLine, args);
     return commandLine;
   }
@@ -85,25 +88,12 @@ public class CommandLine implements InputParameters {
     commandLine.checkForValidDepth();
   }
 
-  private static boolean isArgumentAnyFlag(String argument){
+  static boolean isArgumentAnyFlag(String argument){
     return isArgumentAFlagOfType(argument, PARAM_URL)
             || isArgumentAFlagOfType(argument, PARAM_DEPTH)
             || isArgumentAFlagOfType(argument, PARAM_LANGUAGE);
   }
 
-  private void setDefaultValues() {
-    valid = true;
-    depth = 2;
-    targetLanguage = new Locale("en");
-    urlList = new ArrayList<>();
-    try {
-      url = new URI("http://histo.io/");
-      //urlList.add(url);
-    } catch (URISyntaxException e) {
-      commandLineLogger.warning("Error while parsing. Default URL could not be parsed.");
-      throw new RuntimeException(e);
-    }
-  }
 
   private boolean checkFlag(boolean flag) {
     if (flag) {
@@ -112,7 +102,7 @@ public class CommandLine implements InputParameters {
     return true;
   }
 
-  private void checkForValidDepth() {
+  void checkForValidDepth() {
     if (depth < 1) {
       valid = false;
     }
@@ -125,6 +115,11 @@ public class CommandLine implements InputParameters {
   @Override
   public URI getUrl() {
     return url;
+  }
+
+  @Override
+  public List<URI> getUrls() {
+    return Collections.unmodifiableList(urlList);
   }
 
   @Override

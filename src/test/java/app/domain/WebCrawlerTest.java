@@ -1,16 +1,18 @@
 package app.domain;
 
-import app.exception.BrokenLinkException;
+import app.mock.MockTranslationService;
+import app.mock.TestPageLoader;
+import app.mock.TestServiceProvider;
+import app.service.task.SameThreadTaskExecutor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -18,62 +20,81 @@ import static org.mockito.Mockito.*;
 class WebCrawlerTest {
   WebCrawler crawler;
   InputParameters inputParametersMock;
-  PageLoader pageLoaderMock;
-  TranslationService translationServiceMock;
-  URI targetUrl;
-  int targetDepth;
-  Locale targetLocale;
-  Locale sourceLanguage;
+  TestPageLoader pageLoader;
+
+  volatile List<URI> targetUrls;
+  volatile int targetDepth;
+  volatile Locale targetLocale;
+  volatile Locale sourceLanguage;
+  TestServiceProvider serviceProvider;
 
   @BeforeEach
   void setUp() throws Exception {
     inputParametersMock = mock(InputParameters.class);
-    targetUrl = new URI("http://localhost");
+    targetUrls = List.of(URI.create("http://localhost"));
     targetDepth = 3;
     targetLocale = Locale.GERMAN;
     sourceLanguage = Locale.ENGLISH;
-    when(inputParametersMock.getTargetLanguage()).thenReturn(targetLocale);
-    when(inputParametersMock.getUrl()).thenReturn(targetUrl);
-    when(inputParametersMock.getDepth()).thenReturn(targetDepth);
+    when(inputParametersMock.getTargetLanguage()).then(invocation -> targetLocale);
+    when(inputParametersMock.getUrls()).then(invocation -> targetUrls);
+    when(inputParametersMock.getDepth()).then(invocation -> targetDepth);
 
-    pageLoaderMock = mock(PageLoader.class);
-    translationServiceMock = mock(TranslationService.class);
-    when(translationServiceMock.translateText(any(String.class), any(Locale.class), any(Locale.class))).then(i -> i.getArgument(0));
-    crawler = new WebCrawler(inputParametersMock, pageLoaderMock, translationServiceMock);
+    serviceProvider = new TestServiceProvider();
+    pageLoader = new TestPageLoader();
+    serviceProvider.pageLoader = pageLoader;
+    serviceProvider.translationService = new MockTranslationService();
+    serviceProvider.taskExecutor = new SameThreadTaskExecutor();
+    crawler = new WebCrawler(inputParametersMock, serviceProvider);
+  }
+
+  Map<URI, Page> mockPagesForTargetUrls(List<URI> urls) {
+    Map<URI, Page> pages = new ConcurrentHashMap<>();
+    for (URI targetUrl : urls) {
+      URI aboutUrl = targetUrl.resolve("about.html");
+      URI termsUrl = targetUrl.resolve("terms.html");
+      pages.put(targetUrl, new Page(targetUrl));
+      pages.put(aboutUrl, new Page(aboutUrl));
+      pages.put(termsUrl, new Page(termsUrl));
+      pages.get(targetUrl).links.add(new Link(aboutUrl, "About", false));
+      pages.get(targetUrl).links.add(new Link(termsUrl, "Terms", false));
+      pages.get(aboutUrl).links.add(new Link(targetUrl, "Back", false));
+      pages.get(termsUrl).links.add(new Link(targetUrl, "Home", false));
+      pages.get(targetUrl).headings.add(new Heading("h1", 1));
+      pages.get(targetUrl).headings.add(new Heading("h2", 2));
+      pages.get(targetUrl).headings.add(new Heading("h3", 3));
+    }
+    pages.values().forEach(p -> p.language = sourceLanguage);
+    pages.values().forEach(pageLoader::mockPage);
+    return pages;
   }
 
   @AfterEach
   void tearDown() {
-    reset(inputParametersMock, pageLoaderMock, translationServiceMock);
+    reset(inputParametersMock);
   }
 
   @Test
   void crawlUrlSingleDepth() throws Exception {
-    Set<URI> visited = new HashSet<>();
+    URI targetUrl = targetUrls.get(0);
     Page page = new Page(targetUrl);
     page.language = sourceLanguage;
     Heading h1 = new Heading("h1", 1);
     page.addHeading(h1);
     Heading h2 = new Heading("h2", 2);
     page.addHeading(h2);
-    doReturn(page).when(pageLoaderMock).loadPage(targetUrl);
-    Report report = crawler.crawlUrl(targetUrl, 1, visited);
+    pageLoader.mockPage(page);
 
+    Task<Report> report = crawler.crawlUrl(targetUrl, 1);
     assertNotNull(report);
-    assertEquals(1, visited.size());
-    assertTrue(visited.contains(targetUrl));
-    verify(inputParametersMock).getTargetLanguage();
-    verify(inputParametersMock).getDepth();
-    verify(pageLoaderMock).loadPage(targetUrl);
-    verify(translationServiceMock).translateText(h1.originalText, sourceLanguage, targetLocale);
-    verify(translationServiceMock).translateText(h2.originalText, sourceLanguage, targetLocale);
-    verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
+    assertEquals(1, crawler.visitedUrls.size());
+    assertTrue(crawler.visitedUrls.contains(targetUrl));
+    //assertTrue(crawler.visitedUrls.contains(linkUrl));
   }
 
   @Test
   void crawlUrlDoubleDepth() throws Exception {
+    URI targetUrl = targetUrls.get(0);
     URI linkUrl = targetUrl.resolve("/about.html");
-    Set<URI> visited = new HashSet<>();
     Page mainPage = new Page(targetUrl);
     mainPage.language = sourceLanguage;
     mainPage.addLink(new Link(linkUrl, "About", false));
@@ -83,78 +104,47 @@ class WebCrawlerTest {
     mainPage.addHeading(new Heading("second", 1));
     subPage.addHeading(new Heading("sub 1", 1));
     subPage.addHeading(new Heading("sub 2", 1));
-
-    doReturn(mainPage).when(pageLoaderMock).loadPage(targetUrl);
-    doReturn(subPage).when(pageLoaderMock).loadPage(linkUrl);
-    Report report = crawler.crawlUrl(targetUrl, 2, visited);
-    assertFalse(report.mainPage.links.get(0).isBroken());
-
+    pageLoader.mockPage(mainPage);
+    pageLoader.mockPage(subPage);
+    Task<Report> report = crawler.crawlUrl(targetUrl, 2);
     assertNotNull(report);
-    assertEquals(2, visited.size());
-    assertTrue(visited.contains(targetUrl));
-    assertTrue(visited.contains(linkUrl));
-    verify(inputParametersMock, times(2)).getTargetLanguage();
-    verify(inputParametersMock, times(2)).getDepth();
-    verify(pageLoaderMock).loadPage(targetUrl);
-    verify(pageLoaderMock).loadPage(linkUrl);
-    verify(translationServiceMock, times(4)).translateText(any(String.class), any(Locale.class), any(Locale.class));
-    verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
+    assertEquals(1, crawler.visitedUrls.size());
+    assertTrue(crawler.visitedUrls.contains(targetUrl));
+    assertFalse(crawler.visitedUrls.contains(linkUrl));
   }
 
   @Test
-  void crawlUrlWithBrokenLink() throws Exception {
-    URI linkUrl = targetUrl.resolve("/about.html");
-    Set<URI> visited = new HashSet<>();
-    Page mainPage = new Page(targetUrl);
-    mainPage.language = sourceLanguage;
-    mainPage.addLink(new Link(linkUrl, "About", false));
-    mainPage.addHeading(new Heading("first", 1));
-    mainPage.addHeading(new Heading("second", 1));
-
-    doReturn(mainPage).when(pageLoaderMock).loadPage(targetUrl);
-    doThrow(new BrokenLinkException(linkUrl, new IOException())).when(pageLoaderMock).loadPage(linkUrl);
-    Report report = crawler.crawlUrl(targetUrl, 2, visited);
-    assertTrue(report.mainPage.links.get(0).isBroken());
-
-    assertNotNull(report);
-    assertEquals(2, visited.size());
-    assertTrue(visited.contains(targetUrl));
-    assertTrue(visited.contains(linkUrl));
-    verify(inputParametersMock, times(1)).getTargetLanguage();
-    verify(inputParametersMock, times(1)).getDepth();
-    verify(pageLoaderMock).loadPage(targetUrl);
-    verify(pageLoaderMock).loadPage(linkUrl);
-    verify(translationServiceMock, times(2)).translateText(any(String.class), any(Locale.class), any(Locale.class));
-    verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
-  }
-
-  @Test
-  void crawl() {
-    URI aboutUrl = targetUrl.resolve("/about.html");
-    URI termsUrl = targetUrl.resolve("/terms.html");
-    Map<URI, Page> pages = Map.of(targetUrl, new Page(targetUrl),
-            aboutUrl, new Page(aboutUrl),
-            termsUrl, new Page(termsUrl));
-    pages.get(targetUrl).links.add(new Link(aboutUrl, "About", false));
-    pages.get(targetUrl).links.add(new Link(termsUrl, "Terms", false));
-    pages.get(aboutUrl).links.add(new Link(targetUrl, "Back", false));
-    pages.get(termsUrl).links.add(new Link(targetUrl, "Home", false));
-    pages.get(targetUrl).headings.add(new Heading("h1", 1));
-    pages.get(targetUrl).headings.add(new Heading("h2", 2));
-    pages.get(targetUrl).headings.add(new Heading("h3", 3));
-    pages.values().forEach(p -> p.language = sourceLanguage);
-    when(pageLoaderMock.loadPage(any(URI.class))).then(i -> pages.get((URI) i.getArgument(0)));
+  void crawlSingleTarget() {
+    Map<URI, Page> pages = mockPagesForTargetUrls(targetUrls);
 
     Report report = crawler.crawl();
 
-    assertNotNull(report);
-    verify(inputParametersMock).getUrl();
-    verify(inputParametersMock, times(4)).getDepth();
-    verify(inputParametersMock, times(3)).getTargetLanguage();
-    verify(pageLoaderMock).loadPage(eq(targetUrl));
-    verify(pageLoaderMock).loadPage(eq(aboutUrl));
-    verify(pageLoaderMock).loadPage(eq(termsUrl));
-    verify(translationServiceMock, times(3)).translateText(any(String.class), eq(sourceLanguage), eq(Locale.GERMAN));
-    verifyNoMoreInteractions(inputParametersMock, pageLoaderMock, translationServiceMock);
+    assertEquals(1, report.mainPages.size());
+    assertEquals(targetUrls.get(0), report.mainPages.get(0).pageUrl);
   }
+
+  @Test
+  void crawlMultipleTargets() {
+    targetUrls = List.of(URI.create("http://localhost/v1/"), URI.create("http://localhost/v2/"));
+    Map<URI, Page> pages = mockPagesForTargetUrls(targetUrls);
+    assertTrue(pages.keySet().containsAll(targetUrls));
+
+    Report report = new WebCrawler(inputParametersMock, serviceProvider).crawl();
+    assertEquals(2, report.mainPages.size());
+  }
+
+  @Test
+  void crawlUrlShouldDetectBrokenLinks() throws Exception {
+    Map<URI, Page> pages = mockPagesForTargetUrls(targetUrls);
+    Page mainPage = pages.get(targetUrls.get(0));
+    Link brokenLink = new Link(URI.create("http://broken.url"), "Test", false);
+    mainPage.getLinks().set(0, brokenLink);
+    assertFalse(brokenLink.isBroken());
+
+    Report report = crawler.crawl();
+    assertTrue(report.mainPages.get(0).links.get(0).isBroken());
+    assertSame(brokenLink, report.mainPages.get(0).links.get(0));
+    assertFalse(report.mainPages.get(0).links.get(1).isBroken());
+  }
+
 }

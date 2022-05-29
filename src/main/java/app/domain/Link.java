@@ -5,9 +5,9 @@ import java.net.URI;
 public class Link {
   final URI url;
   final String title;
-  boolean broken;
+  volatile boolean broken;
 
-  int depth;
+  volatile int depth;
 
   public Link(URI url, String title) {
     this(url, title, false);

@@ -35,7 +35,7 @@ class ReportTest {
 
   @Test
   void mergeSingle() {
-    Report subReport = new Report(subPage1, 2, Locale.ENGLISH);
+    Report subReport = new Report(subPage1,1, 2, Locale.ENGLISH);
     report.merge(subReport);
 
     assertEquals(1, report.subPages.size());
@@ -44,10 +44,10 @@ class ReportTest {
 
   @Test
   void mergeMerged() {
-    Report mergedReport = new Report(subPage1, 3, Locale.ENGLISH);
-    Report leafReport1 = new Report(leafPage11, 3, Locale.ENGLISH);
+    Report mergedReport = new Report(subPage1, 1,3, Locale.ENGLISH);
+    Report leafReport1 = new Report(leafPage11,2, 3, Locale.ENGLISH);
     mergedReport.merge(leafReport1);
-    Report leafReport2 = new Report(leafPage12, 3, Locale.ENGLISH);
+    Report leafReport2 = new Report(leafPage12, 2,3, Locale.ENGLISH);
     mergedReport.merge(leafReport2);
 
     report.merge(mergedReport);
@@ -60,17 +60,17 @@ class ReportTest {
 
   @Test
   void getPageList() {
-    Report subReport1 = new Report(subPage1, 3, Locale.ENGLISH);
+    Report subReport1 = new Report(subPage1,1, 3, Locale.ENGLISH);
 
-    Report leafReport1 = new Report(leafPage11, 3, Locale.ENGLISH);
+    Report leafReport1 = new Report(leafPage11,2, 3, Locale.ENGLISH);
     subReport1.merge(leafReport1);
 
-    Report leafReport2 = new Report(leafPage12, 3, Locale.ENGLISH);
+    Report leafReport2 = new Report(leafPage12,2, 3, Locale.ENGLISH);
     subReport1.merge(leafReport2);
 
     report.merge(subReport1);
 
-    Report subReport2 = new Report(subPage2, 3, Locale.ENGLISH);
+    Report subReport2 = new Report(subPage2,1, 3, Locale.ENGLISH);
     report.merge(subReport2);
 
     List<Page> pageList = report.getPageList();

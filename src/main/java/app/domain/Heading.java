@@ -1,6 +1,7 @@
 package app.domain;
 
 import java.util.Locale;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Section heading element from HTML document
@@ -11,16 +12,16 @@ public class Heading {
   /**
    * Heading text, i.e. as received from Element.innerText
    */
-  String originalText;
+  final String originalText;
 
-  String translatedText;
+  volatile String translatedText;
 
   /**
    * Heading rank according to html5 specification
    */
   final int rank;
 
-  int depth;
+  volatile int depth;
 
   public Heading(String originalText, int rank) {
     this.originalText = originalText;
@@ -48,8 +49,12 @@ public class Heading {
     this.depth = depth;
   }
 
-  public void translate(TranslationService translationService, Locale sourceLanguage, Locale targetLanguage) {
-    translatedText = translationService.translateText(originalText, sourceLanguage, targetLanguage);
+  public CompletionStage<Void> translate(TranslationService translationService, Locale sourceLanguage, Locale targetLanguage) {
+    return translationService.translateText(originalText, sourceLanguage, targetLanguage, this::setTranslatedText);
+  }
+
+  synchronized void setTranslatedText(String text) {
+    translatedText = text;
   }
 
 }

@@ -1,5 +1,6 @@
-package app.service;
+package app.service.translation;
 
+import app.service.translation.DeeplTranslationService;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -53,7 +54,7 @@ class DeeplTranslationServiceTest {
 
   @Test
   void createApiRequest() {
-    HttpRequest apiRequest = deepl.createApiRequest("test", Locale.ENGLISH, Locale.GERMAN);
+    HttpRequest apiRequest = deepl.createApiRequest(new String[]{"test"}, Locale.ENGLISH, Locale.GERMAN);
     assertEquals("POST", apiRequest.method());
     assertEquals("https://api-free.deepl.com/v2/translate?api_key=test", apiRequest.uri().toString());
     assertTrue(apiRequest.bodyPublisher().isPresent());
@@ -61,8 +62,8 @@ class DeeplTranslationServiceTest {
 
   @Test
   void extractTextFromApiResponse() {
-    String defaultText = "test";
-    String text = deepl.extractTextFromApiResponse(apiResponse, defaultText);
-    assertEquals("Hallo Welt!", text);
+    String[] text = {"test"};
+    deepl.extractTextFromApiResponse(apiResponse, text);
+    assertEquals("Hallo Welt!", text[0]);
   }
 }

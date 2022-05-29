@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -106,10 +105,10 @@ public class MarkdownReportServiceTest {
 
     when(report1.getPageList()).thenReturn(pageList);
     when(report1.getInputUrl()).thenReturn(googleURL);
-    when(report1.getDepth()).thenReturn(1);
+    when(report1.getMaxDepth()).thenReturn(1);
     when(report1.getTargetLanguage()).thenReturn(Locale.ENGLISH);
     when(report2.getInputUrl()).thenReturn(qwantURL);
-    when(report2.getDepth()).thenReturn(3);
+    when(report2.getMaxDepth()).thenReturn(3);
     when(report2.getTargetLanguage()).thenReturn(Locale.FRENCH);
     when(page1.getHeadings()).thenReturn(headingList1);
     when(page1.getLinks()).thenReturn(linksList1);
@@ -155,7 +154,7 @@ public class MarkdownReportServiceTest {
     Assertions.assertEquals(expectedResult, resultReports[0]);
 
     verify(report1, times(2)).getInputUrl();
-    verify(report1, times(1)).getDepth();
+    verify(report1, times(1)).getMaxDepth();
     verify(report1, times(1)).getTargetLanguage();
     verify(report1, times(1)).getSourceLanguage();
 
@@ -220,7 +219,7 @@ public class MarkdownReportServiceTest {
     assertEquals(expected, reportService.renderMetaInformation(report2));
 
     verify(report2, times(1)).getInputUrl();
-    verify(report2, times(1)).getDepth();
+    verify(report2, times(1)).getMaxDepth();
     verify(report2, times(1)).getTargetLanguage();
     verify(report2, times(1)).getSourceLanguage();
     verifyNoMoreInteractions(report2);

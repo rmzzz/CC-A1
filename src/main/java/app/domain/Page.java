@@ -4,8 +4,11 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 public class Page {
+  public static final Page EMPTY = new Page(null);
+
   final URI pageUrl;
   final List<Heading> headings = new LinkedList<>();
   final List<Link> links = new LinkedList<>();
@@ -36,10 +39,17 @@ public class Page {
   }
 
   public Page translate(TranslationService translationService, Locale targetLanguage) {
-    for (Heading heading : headings) {
-      heading.translate(translationService, language, targetLanguage);
-    }
+    translateAsync(translationService, targetLanguage)
+            .join();
     return this;
+  }
+
+  public CompletableFuture<Void> translateAsync(TranslationService translationService, Locale targetLanguage) {
+    var translationFutures = headings.stream()
+            .map(heading -> heading.translate(translationService, language, targetLanguage)
+                    .toCompletableFuture())
+            .toArray(CompletableFuture[]::new);
+    return CompletableFuture.allOf(translationFutures);
   }
 
   public Locale getLanguage() {

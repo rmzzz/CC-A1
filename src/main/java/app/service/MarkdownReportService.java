@@ -1,7 +1,6 @@
 package app.service;
 
 import app.domain.Heading;
-import app.domain.InputParameters;
 import app.domain.Link;
 import app.domain.Page;
 import app.domain.Report;
@@ -49,7 +48,7 @@ public class MarkdownReportService implements ReportService {
   String renderMetaInformation(Report targetReport) {
     return "Input:\n"
             + MARK_DOWN_BREAK + "<" + targetReport.getInputUrl() + ">\n"
-            + MARK_DOWN_BREAK + "depth: " + targetReport.getDepth() + "\n"
+            + MARK_DOWN_BREAK + "depth: " + targetReport.getMaxDepth() + "\n"
             + MARK_DOWN_BREAK + "target language: " + targetReport.getTargetLanguage() + "\n"
             + MARK_DOWN_BREAK + "source language: " + targetReport.getSourceLanguage() + "\n"
             + MARK_DOWN_BREAK + "report:\n";

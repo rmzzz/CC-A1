@@ -3,70 +3,84 @@ package app.domain;
 import app.exception.BrokenLinkException;
 
 import java.net.URI;
+import java.util.Deque;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class WebCrawler {
   static Logger logger = Logger.getLogger("app.domain.WebCrawler");
+  final List<URI> urls;
+  final int maxDepth;
+  final Locale targetLanguage;
 
-  InputParameters inputParameters;
   PageLoader pageLoader;
   TranslationService translationService;
+  TaskExecutor taskExecutor;
+  Set<URI> visitedUrls;
 
-  public WebCrawler(InputParameters inputParameters, PageLoader pageLoader, TranslationService translationService) {
-    this.inputParameters = inputParameters;
-    this.pageLoader = pageLoader;
-    this.translationService = translationService;
+  Deque<Task<Report>> tasksQueue;
+
+  public WebCrawler(InputParameters inputParameters, ServiceProvider serviceFactory) {
+    this.urls = inputParameters.getUrls();
+    this.maxDepth = inputParameters.getDepth();
+    this.targetLanguage = inputParameters.getTargetLanguage();
+
+    this.pageLoader = serviceFactory.getPageLoader();
+    this.translationService = serviceFactory.getTranslationService();
+    this.taskExecutor = serviceFactory.getTaskExecutor();
+    this.visitedUrls = ConcurrentHashMap.newKeySet();
+    this.tasksQueue = new ConcurrentLinkedDeque<>();
   }
 
   public Report crawl() {
-    URI url = inputParameters.getUrl();
-    int depth = inputParameters.getDepth();
-    Set<URI> visitedUrls = ConcurrentHashMap.newKeySet();
-    return crawlUrl(url, depth, visitedUrls);
-  }
-
-  Report crawlUrl(URI url, int depth, Set<URI> visitedUrls) {
-    Page page = loadPage(url, visitedUrls);
-    Report resultReport = translatePage(page);
-    if (depth <= 1) {
-      return resultReport;
+    for (URI url : urls) {
+      Task<Report> task = crawlUrl(url);
+      tasksQueue.add(task);
     }
-    return crawlSubPages(page, resultReport, depth - 1, visitedUrls);
+    Report report = taskExecutor.executeAllTasksThenMergeResult(tasksQueue,
+            Report.EMPTY, Report::merge);
+    return report;
   }
 
-  Page loadPage(URI url, Set<URI> visitedUrls) {
+  Task<Report> crawlUrl(URI url) {
+    return crawlUrl(url, 0);
+  }
+
+  Task<Report> crawlUrl(URI url, int depth) {
+    logger.fine(() -> "crawling URL " + url);
     visitedUrls.add(url);
-    Page page = pageLoader.loadPage(url);
-    logger.fine(() -> "loaded page " + page.pageUrl);
-    return page;
+    Task<Page> loadPageTask = taskExecutor.createTask(url, pageLoader::loadPage);
+    if (depth < maxDepth) {
+      loadPageTask = loadPageTask.addStep(page -> enqueueSubPages(page, depth + 1));
+    }
+    Task<Page> translatePageTask = loadPageTask.addStep(
+            page -> page.translate(translationService, targetLanguage));
+    Task<Report> createReportTask = translatePageTask.addStep(
+            page -> new Report(page, depth, maxDepth, targetLanguage));
+    return createReportTask;
   }
 
-  Report translatePage(Page page) {
-    Locale targetLanguage = inputParameters.getTargetLanguage();
-    Page translatedPage = page.translate(translationService, targetLanguage);
-    Report resultReport = new Report(translatedPage, inputParameters.getDepth(), targetLanguage);
-    logger.fine(() -> "translated page " + translatedPage.pageUrl);
-    return resultReport;
-  }
-
-  Report crawlSubPages(Page page, Report initialReport, int subDepth, Set<URI> visitedUrls) {
-    Report resultReport = initialReport;
+  Page enqueueSubPages(Page page, int subDepth) {
     for (Link link : page.getLinks()) {
       URI uri = link.getUrl();
       if (!visitedUrls.contains(uri)) {
-        try {
-          Report report = crawlUrl(uri, subDepth, visitedUrls);
-          resultReport = resultReport.merge(report);
-        } catch (BrokenLinkException ex) {
-          logger.log(Level.FINE, "Broken link: " + uri, ex);
-          link.setBroken(true);
-        }
+        Task<Report> task = crawlUrl(uri, subDepth)
+                .addErrorHandler(((report, error) -> {
+                  if (error instanceof BrokenLinkException blx) {
+                    logger.log(Level.FINE, "Broken link: " + uri, blx);
+                    link.setBroken(true);
+                    return Report.EMPTY; // TODO maybe add Report.ERROR
+                  }
+                  return null;
+                }));
+        tasksQueue.add(task);
       }
     }
-    return resultReport;
+    return page;
   }
 }

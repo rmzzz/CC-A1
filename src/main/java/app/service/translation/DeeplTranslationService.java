@@ -1,4 +1,4 @@
-package app.service;
+package app.service.translation;
 
 import app.domain.TranslationService;
 import app.exception.ConfigurationException;
@@ -14,11 +14,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Locale;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * TranslationService backed with DeepL API free web service.
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
  */
 public class DeeplTranslationService implements TranslationService {
   static Logger logger = Logger.getLogger(DeeplTranslationService.class.getName());
+
+  static final String EMPTY = "";
 
   String apiKey;
   HttpClient httpClient;
@@ -53,39 +56,53 @@ public class DeeplTranslationService implements TranslationService {
   }
 
   @Override
-  public String translateText(String originalText, Locale sourceLanguage, Locale targetLanguage) {
-    String text = originalText;
+  public String[] translateText(String[] originalText, Locale sourceLanguage, Locale targetLanguage) {
+    String[] text = Arrays.copyOf(originalText, originalText.length);
     try {
       HttpRequest request = createApiRequest(originalText, sourceLanguage, targetLanguage);
       HttpResponse<JsonElement> httpResponse = httpClient.send(request, this::getApiResponseBodyParser);
       JsonElement body = httpResponse.body();
-      text = extractTextFromApiResponse(body, originalText);
-    } catch (IOException ex) {
-      logger.log(Level.WARNING, "Error translating text", ex);
+      extractTextFromApiResponse(body, text);
     } catch (InterruptedException ex) {
       logger.fine("interrupted");
       Thread.currentThread().interrupt();
+    } catch (IOException ex) {
+      logger.log(Level.WARNING, "Error translating text", ex);
+    } catch (RuntimeException ex) {
+      logger.log(Level.SEVERE, "Error translating text", ex);
+      throw ex;
     }
     return text;
   }
 
-  HttpRequest createApiRequest(String originalText, Locale sourceLanguage, Locale targetLanguage) {
-    String requestBody = Map.of("auth_key", apiKey,
-                    "target_lang", mapLocaleToDeeplLanguage(targetLanguage),
-                    "source_lang", mapLocaleToDeeplLanguage(sourceLanguage),
-                    "text", originalText)
-            .entrySet().stream()
-            .filter(entry -> entry.getValue() != null)
-            .map(entry -> entry.getKey() + '=' + entry.getValue())
+  HttpRequest createApiRequest(String[] originalText, Locale sourceLanguage, Locale targetLanguage) {
+    String requestBody = Stream.concat(
+                    Stream.of(encodeParameter("auth_key", apiKey),
+                                    encodeParameter("target_lang",
+                                            mapLocaleToDeeplLanguage(targetLanguage)),
+                                    encodeParameterIfNotEmpty("source_lang",
+                                            mapLocaleToDeeplLanguage(sourceLanguage)))
+                            .filter(parameter -> !parameter.isEmpty()),
+                    Arrays.stream(originalText)
+                            .map(text -> encodeParameter("text", text)))
             .collect(Collectors.joining("&"));
+
     return HttpRequest.newBuilder(URI.create("https://api-free.deepl.com/v2/translate?api_key=" + apiKey))
             .header("Content-Type", "application/x-www-form-urlencoded")
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .build();
   }
 
+  String encodeParameter(String key, String value) {
+    return key + '=' + value;
+  }
+
+  String encodeParameterIfNotEmpty(String key, String value) {
+    return key != null && value != null && !key.isBlank() && !value.isBlank() ? encodeParameter(key, value) : EMPTY;
+  }
+
   String mapLocaleToDeeplLanguage(Locale locale) {
-    return locale != null ? locale.getLanguage().toUpperCase(Locale.ROOT) : null;
+    return locale != null ? locale.getLanguage().toUpperCase(Locale.ROOT) : EMPTY;
   }
 
   HttpResponse.BodySubscriber<JsonElement> getApiResponseBodyParser(HttpResponse.ResponseInfo responseInfo) {
@@ -94,15 +111,24 @@ public class DeeplTranslationService implements TranslationService {
             JsonParser::parseString);
   }
 
-  String extractTextFromApiResponse(JsonElement json, String defaultText) {
+  void extractTextFromApiResponse(JsonElement json, String[] text) {
     JsonArray translations = json.getAsJsonObject().getAsJsonArray("translations");
     if (translations.isEmpty()) {
-      return defaultText;
+      return;
     }
-    JsonObject translation = translations.get(0).getAsJsonObject();
-    String translatedText = translation.get("text").getAsString();
-    logger.fine(() -> "translated text: " + translatedText);
-    return translatedText;
+    int size = translations.size();
+    if (size != text.length) {
+      logger.warning("Received " + size + " translations, but requested " + text.length);
+      // resilience
+      size = Math.min(size, text.length);
+    }
+    for(int i = 0; i < size; i++) {
+      JsonObject translation = translations.get(i).getAsJsonObject();
+      String translatedText = translation.get("text").getAsString();
+      logger.fine(() -> "translated text: " + translatedText);
+      if (translatedText != null && !translatedText.isBlank()) {
+        text[i] = translatedText;
+      }
+    }
   }
-
 }

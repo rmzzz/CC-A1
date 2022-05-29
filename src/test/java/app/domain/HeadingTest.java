@@ -1,5 +1,7 @@
 package app.domain;
 
+import app.mock.MockTranslationService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,9 +13,16 @@ import static org.mockito.Mockito.*;
 class HeadingTest {
   Heading heading;
 
+  MockTranslationService translationServiceMock = new MockTranslationService();
+
   @BeforeEach
   void setUp() {
     heading = new Heading("test", 1);
+  }
+
+  @AfterEach
+  void tearDown() {
+    translationServiceMock.reset();
   }
 
   @Test
@@ -28,14 +37,10 @@ class HeadingTest {
 
   @Test
   void translate() {
-    TranslationService translationServiceMock = mock(TranslationService.class);
-    doReturn("Test").when(translationServiceMock).translateText("test", Locale.ENGLISH, Locale.GERMAN);
+    translationServiceMock.mockTranslation("test", Locale.ENGLISH, Locale.GERMAN, "Test");
 
-    heading.translate(translationServiceMock, Locale.ENGLISH, Locale.GERMAN);
+    heading.translate(translationServiceMock, Locale.ENGLISH, Locale.GERMAN)
+            .toCompletableFuture().join();
     assertEquals("Test", heading.getText());
-
-    verify(translationServiceMock).translateText("test", Locale.ENGLISH, Locale.GERMAN);
-    verifyNoMoreInteractions(translationServiceMock);
-
   }
 }

@@ -65,7 +65,6 @@ public class CommandLine implements InputParameters {
   private static int parseURLandReturnNumberOfURLs(CommandLine commandLine, String[] args, int urlFlagIndex){
 
     try {
-      commandLine.url = new URI(args[urlFlagIndex + 1]);//TODO: deprecate
       urlFlagIndex++;
 
       while(urlFlagIndex < args.length && !isArgumentAnyFlag(args[urlFlagIndex])){
@@ -139,7 +138,7 @@ public class CommandLine implements InputParameters {
   public String getUsage() {
     return String.format("""
                     Input parameters:
-                      -%c <url>, --%s <url> - URL to crawl, e.g. "https://www.aau.at" or just "www.aau.at"
+                      -%c <url>, --%s <url> - URLs to crawl, e.g. "https://www.aau.at" or just "www.aau.at" separated with space
                       -%c <depth>, --%s <depth> - the depth of websites to crawl, e.g. 3
                       -%c <lang>, --%s <lang> - target language as IETF BCP 47 language tag, e.g. "de-AT" or "de"
                     """,

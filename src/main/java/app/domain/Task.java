@@ -17,7 +17,7 @@ public class Task<R> {
   protected final Task<Object> predecessor;
 
   protected final Function<Object, R> taskBody;
-  protected List<BiFunction<R, Throwable, R>> errorHandlers = new LinkedList<>();
+  protected final List<BiFunction<R, Throwable, R>> errorHandlers = new LinkedList<>();
 
   public <T> Task(Task<T> predecessor, Function<T, R> taskBody) {
     this.predecessor = (Task<Object>) predecessor;

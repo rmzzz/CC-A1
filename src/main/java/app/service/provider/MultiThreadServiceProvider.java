@@ -4,7 +4,6 @@ import app.domain.InputParameters;
 import app.service.JsoupPageLoader;
 import app.service.MarkdownReportService;
 import app.service.task.MultiThreadTaskExecutor;
-import app.service.task.SameThreadTaskExecutor;
 import app.service.translation.BufferingTranslationService;
 import app.service.translation.CachingTranslationService;
 import app.service.translation.DeeplTranslationService;

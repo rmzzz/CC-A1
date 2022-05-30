@@ -80,7 +80,7 @@ public class Report {
       for (Link link : page.getLinks()) {
         Page subPage = subPages.get(link.getUrl());
         if (subPage == null) {
-          link.setBroken(true);
+          link.setBroken(true); // TODO check if this is necessary
         } else {
           addPageToList(subPage, pageList, addedUrls, currentDepth + 1);
         }

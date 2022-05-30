@@ -9,15 +9,20 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class BufferingTranslationService implements TranslationService {
   final TranslationService delegate;
 
   final ConcurrentLinkedDeque<Translation> translationQueue = new ConcurrentLinkedDeque<>();
+  ExecutorService executor;
 
   public BufferingTranslationService(TranslationService delegate) {
     this.delegate = delegate;
+    // use single thread executor in order to protect delegate service from concurrent requests
+    executor = Executors.newSingleThreadExecutor();
   }
 
   @Override
@@ -35,7 +40,7 @@ public class BufferingTranslationService implements TranslationService {
   }
 
   void runUpdateTranslationsSequentially() {
-    CompletableFuture.runAsync(this::updateTranslations);
+    CompletableFuture.runAsync(this::updateTranslations, executor);
   }
 
   void updateTranslations() {

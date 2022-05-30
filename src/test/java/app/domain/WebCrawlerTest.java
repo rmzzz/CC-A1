@@ -3,7 +3,7 @@ package app.domain;
 import app.mock.MockTranslationService;
 import app.mock.TestPageLoader;
 import app.mock.TestServiceProvider;
-import app.service.task.SameThreadTaskExecutor;
+import app.service.task.SingleThreadTaskExecutor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class WebCrawlerTest {
     pageLoader = new TestPageLoader();
     serviceProvider.pageLoader = pageLoader;
     serviceProvider.translationService = new MockTranslationService();
-    serviceProvider.taskExecutor = new SameThreadTaskExecutor();
+    serviceProvider.taskExecutor = new SingleThreadTaskExecutor();
     crawler = new WebCrawler(inputParametersMock, serviceProvider);
   }
 

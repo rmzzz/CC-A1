@@ -50,7 +50,7 @@ public class Heading {
   }
 
   public CompletionStage<Void> translate(TranslationService translationService, Locale sourceLanguage, Locale targetLanguage) {
-    return translationService.translateText(originalText, sourceLanguage, targetLanguage, this::setTranslatedText);
+    return translationService.translateTextAsync(originalText, sourceLanguage, targetLanguage, this::setTranslatedText);
   }
 
   synchronized void setTranslatedText(String text) {

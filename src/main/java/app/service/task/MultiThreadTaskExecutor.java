@@ -5,8 +5,6 @@ import app.domain.TaskExecutor;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -14,8 +12,12 @@ import java.util.function.Function;
 public class MultiThreadTaskExecutor implements TaskExecutor {
   final ExecutorService executor;
 
+  protected MultiThreadTaskExecutor(ExecutorService executor) {
+    this.executor = executor;
+  }
+
   public MultiThreadTaskExecutor() {
-    executor = Executors.newWorkStealingPool();
+    this(Executors.newWorkStealingPool());
   }
 
   @Override

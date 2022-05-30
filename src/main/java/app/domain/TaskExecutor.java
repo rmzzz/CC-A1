@@ -1,8 +1,6 @@
 package app.domain;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
@@ -19,10 +17,10 @@ public interface TaskExecutor {
     AtomicReference<R> resultHolder = new AtomicReference<>(defaultResult);
     do {
       // caveat: do not replace the loop by iterator nor stream, because tasksQueue can be modified during processing!
-      for(Task<R> task = tasksQueue.poll(); task != null; task = tasksQueue.poll())
-      {
+      for(Task<R> task = tasksQueue.poll(); task != null; task = tasksQueue.poll()) {
         var future = executeTask(task)
                 .thenAccept(nextResult -> {
+                  // synchronize on resultHolder in order to ensure all reports are merged
                   synchronized (resultHolder) {
                     R result = resultMerger.apply(resultHolder.get(), nextResult);
                     resultHolder.set(result);

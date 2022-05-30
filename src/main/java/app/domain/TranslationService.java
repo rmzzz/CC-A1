@@ -12,12 +12,21 @@ public interface TranslationService {
     return translateText(new String[]{originalText}, sourceLanguage, targetLanguage)[0];
   }
 
-  default CompletionStage<Void> translateText(String originalText, Locale sourceLanguage, Locale targetLanguage,
-                                              Consumer<String> translationReceiver) {
+  /**
+   * translate text asynchronously and then set result into translationReceiver
+   * @param originalText
+   * @param sourceLanguage
+   * @param targetLanguage
+   * @param translationReceiver
+   * @return completion stage
+   */
+  default CompletionStage<Void> translateTextAsync(String originalText, Locale sourceLanguage, Locale targetLanguage,
+                                                   Consumer<String> translationReceiver) {
     return translateTextAsync(originalText, sourceLanguage, targetLanguage)
             .thenAccept(translationReceiver);
   }
 
+  // TODO javadoc
   default CompletionStage<String> translateTextAsync(String originalText, Locale sourceLanguage, Locale targetLanguage) {
     return CompletableFuture.supplyAsync(() -> translateText(originalText, sourceLanguage, targetLanguage));
   }

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -49,6 +50,7 @@ public class MarkdownReportServiceTest {
 
   final String expectedResult = """
           Input:
+          <br>URLs:
           <br><https://www.google.at/>
           <br>depth: 1
           <br>target language: en
@@ -104,10 +106,14 @@ public class MarkdownReportServiceTest {
     when(cli2.getTargetLanguage()).thenReturn(Locale.FRENCH);
 
     when(report1.getPageList()).thenReturn(pageList);
-    when(report1.getInputUrl()).thenReturn(googleURL);
+    List<URI> uriListReport1 = new ArrayList<>();
+    uriListReport1.add(googleURL);
+    when(report1.getInputUrls()).thenReturn(uriListReport1);
     when(report1.getMaxDepth()).thenReturn(1);
     when(report1.getTargetLanguage()).thenReturn(Locale.ENGLISH);
-    when(report2.getInputUrl()).thenReturn(qwantURL);
+    List<URI> uriListReport2 = new ArrayList<>();
+    uriListReport2.add(qwantURL);
+    when(report2.getInputUrls()).thenReturn(uriListReport2);
     when(report2.getMaxDepth()).thenReturn(3);
     when(report2.getTargetLanguage()).thenReturn(Locale.FRENCH);
     when(page1.getHeadings()).thenReturn(headingList1);
@@ -153,7 +159,7 @@ public class MarkdownReportServiceTest {
     });
     Assertions.assertEquals(expectedResult, resultReports[0]);
 
-    verify(report1, times(2)).getInputUrl();
+    verify(report1, times(2)).getInputUrls();
     verify(report1, times(1)).getMaxDepth();
     verify(report1, times(1)).getTargetLanguage();
     verify(report1, times(1)).getSourceLanguage();
@@ -210,6 +216,7 @@ public class MarkdownReportServiceTest {
   void createMetaInformationTest() {
     String expected = """
             Input:
+            <br>URLs:
             <br><https://www.qwant.com/>
             <br>depth: 3
             <br>target language: fr
@@ -218,7 +225,7 @@ public class MarkdownReportServiceTest {
             """;
     assertEquals(expected, reportService.renderMetaInformation(report2));
 
-    verify(report2, times(1)).getInputUrl();
+    verify(report2, times(1)).getInputUrls();
     verify(report2, times(1)).getMaxDepth();
     verify(report2, times(1)).getTargetLanguage();
     verify(report2, times(1)).getSourceLanguage();

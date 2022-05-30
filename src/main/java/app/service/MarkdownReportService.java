@@ -41,17 +41,32 @@ public class MarkdownReportService implements ReportService {
   }
 
   String renderFileName(Report targetReport){
-    String filename = extractDomainNameFromURL(targetReport.getInputUrl()) + ".md";
+    String filename = extractDomainNameFromURL(targetReport.getInputUrls().get(0)) + ".md";
     return filename;
   }
 
   String renderMetaInformation(Report targetReport) {
     return "Input:\n"
-            + MARK_DOWN_BREAK + "<" + targetReport.getInputUrl() + ">\n"
+            + renderURLMetaInformation(targetReport.getInputUrls())
             + MARK_DOWN_BREAK + "depth: " + targetReport.getMaxDepth() + "\n"
             + MARK_DOWN_BREAK + "target language: " + targetReport.getTargetLanguage() + "\n"
             + MARK_DOWN_BREAK + "source language: " + targetReport.getSourceLanguage() + "\n"
             + MARK_DOWN_BREAK + "report:\n";
+  }
+
+  String renderURLMetaInformation(List<URI> urlList){
+
+    StringBuilder resultString = new StringBuilder();
+    resultString.append(MARK_DOWN_BREAK);
+    resultString.append("URLs:\n");
+
+    for(URI url : urlList){
+      resultString.append(MARK_DOWN_BREAK);
+      resultString.append("<");
+      resultString.append(url);
+      resultString.append(">\n");
+    }
+    return resultString.toString();
   }
 
   String renderPageContents(List<Page> pageList) {

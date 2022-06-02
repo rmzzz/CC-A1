@@ -1,6 +1,7 @@
 package app.service.translation;
 
 import app.service.translation.DeeplTranslationService;
+import app.tests.BaseUnitTest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -16,7 +17,7 @@ import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class DeeplTranslationServiceTest {
+class DeeplTranslationServiceTest extends BaseUnitTest {
   DeeplTranslationService deepl;
   HttpClient httpClientMock;
   HttpResponse<JsonElement> responseMock;
@@ -24,7 +25,6 @@ class DeeplTranslationServiceTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    System.setProperty("apiKey", "test");
     deepl = new DeeplTranslationService();
     httpClientMock = mock(HttpClient.class);
     deepl.httpClient = httpClientMock;

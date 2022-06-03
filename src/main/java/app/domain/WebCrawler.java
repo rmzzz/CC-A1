@@ -74,6 +74,7 @@ public class WebCrawler {
                   if (error instanceof BrokenLinkException blx) {
                     logger.log(Level.FINE, "Broken link: " + uri, blx);
                     link.setBroken(true);
+                    link.setErrorMessage(blx.getMessage());
                     return Report.EMPTY; // TODO maybe add Report.ERROR
                   }
                   return null;

@@ -4,6 +4,7 @@ import app.domain.Heading;
 import app.domain.Link;
 import app.domain.Page;
 import app.domain.Report;
+import app.exception.BrokenLinkException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,7 @@ public class MarkdownReportServiceTest {
           ##----> Heading3
           <br>-->link to <https://www.google.at/>
           <br>----->broken link <https://www.qwant.com/>
+          <br>Error when loading qwant
           <br>
           #-> Header A1
           #-> Header A2
@@ -84,6 +86,7 @@ public class MarkdownReportServiceTest {
     githubURL = new URI("https://github.com/rmzzz/CC-A1");
     googleLink = new Link(googleURL, "Google", false);
     qwantLink = new Link(qwantURL, "Qwant", true);
+    qwantLink.setErrorMessage("Error when loading qwant");
     aauLink = new Link(aauURL, "AAU", false);
     stackOverFlowLink = new Link(stackOverFlowURL, "Stackoverflow", true);
     githubLink = new Link(githubURL, "GitHub", false);
@@ -210,6 +213,11 @@ public class MarkdownReportServiceTest {
   @Test
   void createLinksTest() {
     assertEquals("<br>--------->link to <https://github.com/rmzzz/CC-A1>\n<br>\n", reportService.renderLinks(linksList3));
+  }
+
+  @Test
+  void createBrokenLinkTest(){
+    Assertions.assertEquals("broken link <https://www.qwant.com/>\n<br>Error when loading qwant\n" ,reportService.renderBrokenLink(qwantLink));
   }
 
   @Test

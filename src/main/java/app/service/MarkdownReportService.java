@@ -121,16 +121,25 @@ public class MarkdownReportService implements ReportService {
     }
     singleLinkString.append('>');
     if(link.isBroken()){
-      singleLinkString.append("broken link ");
+      singleLinkString.append(renderBrokenLink(link));
     }
     else {
-      singleLinkString.append("link to ");
+      singleLinkString.append(renderNonBrokenLink(link));
     }
-    singleLinkString.append("<");
-    singleLinkString.append(link.getUrl());
-    singleLinkString.append(">\n");
-
     return singleLinkString.toString();
+  }
+
+  String renderBrokenLink(Link link){
+    String brokenLinkErrorMessage = "broken link <" + link.getUrl() + ">\n";
+    if(link.getErrorMessage() != null){
+      brokenLinkErrorMessage += MARK_DOWN_BREAK + link.getErrorMessage() + "\n";
+    }
+    return brokenLinkErrorMessage;
+  }
+
+  String renderNonBrokenLink(Link link){
+    String linkString = "link to <" + link.getUrl() + ">\n";
+    return linkString;
   }
 
   public String extractDomainNameFromURL(URI targetURL) {

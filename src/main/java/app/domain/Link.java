@@ -7,6 +7,7 @@ public class Link {
   final String title;
   volatile boolean broken;
 
+  volatile String errorMessage;
   volatile int depth;
 
   public Link(URI url, String title) {
@@ -40,5 +41,13 @@ public class Link {
 
   public void setDepth(int depth) {
     this.depth = depth;
+  }
+
+  public String getErrorMessage(){
+    return errorMessage;
+  }
+
+  public void setErrorMessage(String errorMessage){
+    this.errorMessage = errorMessage;
   }
 }

@@ -36,7 +36,7 @@ class CachingTranslationServiceTest extends BaseUnitTest {
   @Test
   void translationKey() {
     String key = CachingTranslationService.translationKey("text", sourceLanguage, targetLanguage);
-    assertEquals("text_de_fr", key);
+    assertEquals("text_" + sourceLanguage + "_" + targetLanguage, key);
   }
 
   @Test

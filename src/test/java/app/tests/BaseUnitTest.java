@@ -11,4 +11,13 @@ public class BaseUnitTest {
   protected void mockApiKey() {
     System.setProperty("apiKey", "test");
   }
+
+  protected void sleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }

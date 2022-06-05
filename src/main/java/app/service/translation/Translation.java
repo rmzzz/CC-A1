@@ -42,4 +42,9 @@ public class Translation {
   String getTranslationDirection() {
     return sourceLanguage + "->" + targetLanguage;
   }
+
+  @Override
+  public String toString() {
+    return "Translation(" + getTranslationDirection() + ", \"" + originalText + "\")";
+  }
 }

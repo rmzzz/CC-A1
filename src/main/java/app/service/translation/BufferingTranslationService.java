@@ -1,6 +1,8 @@
 package app.service.translation;
 
 import app.domain.TranslationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,15 +10,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class BufferingTranslationService implements TranslationService {
+  static final Logger LOGGER = LoggerFactory.getLogger(BufferingTranslationService.class);
+
   final TranslationService delegate;
 
-  final ConcurrentLinkedDeque<Translation> translationQueue = new ConcurrentLinkedDeque<>();
+  final ConcurrentLinkedQueue<Translation> translationQueue = new ConcurrentLinkedQueue<>();
   ExecutorService executor;
 
   public BufferingTranslationService(TranslationService delegate) {
@@ -35,6 +39,7 @@ public class BufferingTranslationService implements TranslationService {
   public CompletionStage<String> translateTextAsync(String originalText, Locale sourceLanguage, Locale targetLanguage) {
     Translation translation = new Translation(originalText, sourceLanguage, targetLanguage);
     translationQueue.add(translation);
+    LOGGER.debug("enqueue translation: {}", translation);
     runUpdateTranslationsSequentially();
     return translation.getTranslationFuture();
   }
@@ -58,6 +63,7 @@ public class BufferingTranslationService implements TranslationService {
         String text = translatedTexts[i];
         future.complete(text);
       }
+      LOGGER.debug("translated {} texts from {} to {}", translatedTexts.length, sourceLanguage, targetLanguage);
     }
   }
 

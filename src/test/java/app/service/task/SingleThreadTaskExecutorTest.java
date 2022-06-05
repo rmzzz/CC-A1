@@ -2,22 +2,17 @@ package app.service.task;
 
 import app.domain.Task;
 import app.domain.TaskExecutor;
+import app.tests.BaseUnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TaskExecutorTest {
-
-  protected Logger logger = LoggerFactory.getLogger(getClass());
+class SingleThreadTaskExecutorTest extends BaseUnitTest {
 
   protected TaskExecutor executor;
 
@@ -26,22 +21,7 @@ class TaskExecutorTest {
   @BeforeEach
   void setUp() {
     queue = new ConcurrentLinkedQueue<>();
-    executor = createExecutor();
-  }
-
-  protected TaskExecutor createExecutor() {
-    return new TaskExecutor() {
-      @Override
-      public <T, R> Task<R> createTask(T parameter, Function<T, R> body) {
-        Task<T> root = new Task<T>(null, arg -> parameter) {
-          @Override
-          public CompletionStage<T> execute() {
-            return CompletableFuture.completedFuture(taskBody.apply(null));
-          }
-        };
-        return new Task<>(root, body);
-      }
-    };
+    executor = new SingleThreadTaskExecutor();
   }
 
   String testTaskBody(int parameter) {
@@ -57,7 +37,7 @@ class TaskExecutorTest {
 
   @Test
   void executeAllTasksThenMergeResult() {
-    Task<String> taskMock =  executor.createTask(0, this::testTaskBody);
+    Task<String> taskMock = executor.createTask(0, this::testTaskBody);
     queue.add(taskMock);
     String result = executor.executeAllTasksThenMergeResult(queue, "", String::concat);
     assertEquals("abc", result);

@@ -2,17 +2,21 @@ package app.service.task;
 
 import app.domain.Task;
 import app.domain.TaskExecutor;
+import app.tests.BaseUnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MultiThreadTaskExecutorTest extends TaskExecutorTest {
+class MultiThreadTaskExecutorTest extends BaseUnitTest {
 
   /** min number of threads to test on more the cores */
   public static final int NUMBER_OF_TEST_THREADS = 32;
@@ -20,17 +24,19 @@ class MultiThreadTaskExecutorTest extends TaskExecutorTest {
 
   ExecutorService executorService;
 
-  @Override
-  protected TaskExecutor createExecutor() {
+  TaskExecutor executor;
+
+  Queue<Task<String>> queue;
+
+  TaskExecutor createExecutor() {
     return new MultiThreadTaskExecutor(executorService);
   }
 
   @BeforeEach
-  @Override
   void setUp() {
-    // test on number thread
+    queue = new ConcurrentLinkedQueue<>();
     executorService = Executors.newFixedThreadPool(NUMBER_OF_TEST_THREADS);
-    super.setUp();
+    executor = createExecutor();
   }
 
   @Test
@@ -82,5 +88,23 @@ class MultiThreadTaskExecutorTest extends TaskExecutorTest {
     }
     String result = executor.executeAllTasksThenMergeResult(queue, "", String::concat);
     assertEquals(NUMBER_OF_TEST_THREADS * 3, result.length());
+  }
+
+  String testTaskBody(int parameter) {
+    if ((parameter % 10) < 2) {
+      Task<String> subTask = executor.createTask(parameter + 1, this::testTaskBody);
+      logger.debug("task({}) spawned {}", parameter, subTask);
+      queue.add(subTask);
+    }
+    String result = Character.toString('a' + parameter);
+    logger.debug("task executed ({}) => {}", parameter, result);
+    return result;
+  }
+
+  @Test
+  void executeTask() throws Exception {
+    Task<String> task = executor.createTask("test", p -> "mock");
+    CompletionStage<String> result = executor.executeTask(task);
+    assertEquals("mock", result.toCompletableFuture().get());
   }
 }

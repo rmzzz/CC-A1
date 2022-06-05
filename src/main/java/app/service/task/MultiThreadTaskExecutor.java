@@ -60,7 +60,11 @@ public class MultiThreadTaskExecutor implements TaskExecutor {
       }
 
     } while (completableFutures.stream().anyMatch(cs -> !cs.isDone()));
-    return resultHolder.get();
+    R result;
+    synchronized (resultHolder) {
+      result = resultHolder.get();
+    }
+    return result;
   }
 
   class MultiThreadTask<T> extends Task<T> {

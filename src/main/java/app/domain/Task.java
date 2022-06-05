@@ -63,4 +63,13 @@ public class Task<R> {
     }
     return result;
   }
+
+  public Task<?> getPredecessor() {
+    return predecessor;
+  }
+
+  @Override
+  public String toString() {
+    return "Task(" + predecessor + ")";
+  }
 }

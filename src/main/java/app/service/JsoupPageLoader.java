@@ -9,11 +9,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  * PageLoader backed by Jsoup.
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
  * @see <a href="https://jsoup.org/apidocs/">Jsoup API docs</a>
  */
 public class JsoupPageLoader implements PageLoader {
-  static final Logger logger = Logger.getLogger(JsoupPageLoader.class.getName());
+  static final Logger logger = LoggerFactory.getLogger(JsoupPageLoader.class);
 
   @Override
   public Page loadPage(URI pageUrl) {
@@ -39,7 +40,7 @@ public class JsoupPageLoader implements PageLoader {
       logger.info("Loaded URL " + url);
       return document;
     } catch (IOException ex) {
-      logger.log(Level.WARNING, "Error loading URL " + url, ex);
+      logger.warn("Error loading URL " + url, ex);
       throw new BrokenLinkException(url, ex);
     }
   }
@@ -75,7 +76,7 @@ public class JsoupPageLoader implements PageLoader {
       String text = link.text();
       String href = link.attr("abs:href");
       if (!href.startsWith("http")) {
-        logger.finest(() -> "skipping non-http link " + href);
+        logger.debug("skipping non-http link {}", href);
         continue;
       }
       page.addLink(new Link(URI.create(href), text));

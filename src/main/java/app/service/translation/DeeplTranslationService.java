@@ -6,6 +6,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Console;
 import java.io.IOException;
@@ -16,8 +18,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * @see <a href="https://www.deepl.com/docs-api">DeepL API Docs</a>
  */
 public class DeeplTranslationService implements TranslationService {
-  static Logger logger = Logger.getLogger(DeeplTranslationService.class.getName());
+  static Logger logger = LoggerFactory.getLogger(DeeplTranslationService.class);
 
   static final String EMPTY = "";
 
@@ -64,12 +64,12 @@ public class DeeplTranslationService implements TranslationService {
       JsonElement body = httpResponse.body();
       extractTextFromApiResponse(body, text);
     } catch (InterruptedException ex) {
-      logger.fine("interrupted");
+      logger.trace("interrupted");
       Thread.currentThread().interrupt();
     } catch (IOException ex) {
-      logger.log(Level.WARNING, "Error translating text", ex);
+      logger.warn("Error translating text", ex);
     } catch (RuntimeException ex) {
-      logger.log(Level.SEVERE, "Error translating text", ex);
+      logger.error("Error translating text", ex);
       throw ex;
     }
     return text;
@@ -118,14 +118,14 @@ public class DeeplTranslationService implements TranslationService {
     }
     int size = translations.size();
     if (size != text.length) {
-      logger.warning("Received " + size + " translations, but requested " + text.length);
+      logger.warn("Received " + size + " translations, but requested " + text.length);
       // resilience
       size = Math.min(size, text.length);
     }
     for(int i = 0; i < size; i++) {
       JsonObject translation = translations.get(i).getAsJsonObject();
       String translatedText = translation.get("text").getAsString();
-      logger.fine(() -> "translated text: " + translatedText);
+      logger.debug("translated text: {}", translatedText);
       if (translatedText != null && !translatedText.isBlank()) {
         text[i] = translatedText;
       }

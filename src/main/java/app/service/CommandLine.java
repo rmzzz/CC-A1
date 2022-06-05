@@ -1,6 +1,8 @@
 package app.service;
 
 import app.domain.InputParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -8,14 +10,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
+
 
 public class CommandLine implements InputParameters {
   public static final String PARAM_URL = "url";
   public static final String PARAM_DEPTH = "depth";
   public static final String PARAM_LANGUAGE = "lang";
 
-  static Logger commandLineLogger = Logger.getLogger("app.service.CommandLine");
+  static Logger logger = LoggerFactory.getLogger(CommandLine.class);
 
   private URI url;
 
@@ -73,7 +75,7 @@ public class CommandLine implements InputParameters {
       }
 
     } catch (URISyntaxException exception) {
-      commandLineLogger.warning("Error when trying to parse URL from command line");
+      logger.warn("Error when trying to parse URL from command line");
     }
     return commandLine.urlList.size();
   }

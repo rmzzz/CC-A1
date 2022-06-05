@@ -5,18 +5,20 @@ import app.domain.Link;
 import app.domain.Page;
 import app.domain.Report;
 import app.domain.ReportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.logging.Logger;
+
 
 public class MarkdownReportService implements ReportService {
 
   private static final String MARK_DOWN_BREAK = "<br>";
-  static final Logger logger = Logger.getLogger("app.service.MarkDownReportService");
+  static final Logger logger = LoggerFactory.getLogger(MarkdownReportService.class);
 
   @Override
   public void createReport(Report targetReport) {
@@ -35,7 +37,7 @@ public class MarkdownReportService implements ReportService {
     try (FileWriter fileWriter = new FileWriter(fileName, StandardCharsets.UTF_8)) {
       fileWriter.write(reportString);
     } catch (IOException ioException) {
-      logger.warning("An error occurred during file writing.");
+      logger.warn("An error occurred during file writing.", ioException);
     }
     logger.info("Report file created: " + fileName);
   }

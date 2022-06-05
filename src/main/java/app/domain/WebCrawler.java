@@ -1,6 +1,8 @@
 package app.domain;
 
 import app.exception.BrokenLinkException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Deque;
@@ -9,11 +11,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 public class WebCrawler {
-  static Logger logger = Logger.getLogger("app.domain.WebCrawler");
+  static Logger logger = LoggerFactory.getLogger(WebCrawler.class);
   final List<URI> urls;
   final int maxDepth;
   final Locale targetLanguage;
@@ -52,7 +53,7 @@ public class WebCrawler {
   }
 
   Task<Report> crawlUrl(URI url, int depth) {
-    logger.fine(() -> "crawling URL " + url);
+    logger.debug("crawling URL {}", url);
     visitedUrls.add(url);
     Task<Page> loadPageTask = taskExecutor.createTask(url, pageLoader::loadPage);
     if (depth < maxDepth) {
@@ -72,7 +73,7 @@ public class WebCrawler {
         Task<Report> task = crawlUrl(uri, subDepth)
                 .addErrorHandler(((report, error) -> {
                   if (error instanceof BrokenLinkException blx) {
-                    logger.log(Level.FINE, "Broken link: " + uri, blx);
+                    logger.debug("Broken link: " + uri, blx);
                     link.setBroken(true);
                     link.setErrorMessage(blx.getMessage());
                     return Report.EMPTY; // TODO maybe add Report.ERROR

@@ -64,6 +64,7 @@ public class MultiThreadTaskExecutor implements TaskExecutor {
     synchronized (resultHolder) {
       result = resultHolder.get();
     }
+    LOGGER.debug("{} tasks done; result: {}", completableFutures.size(), result);
     return result;
   }
 

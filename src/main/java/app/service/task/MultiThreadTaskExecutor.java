@@ -47,6 +47,7 @@ public class MultiThreadTaskExecutor implements TaskExecutor {
     AtomicReference<R> resultHolder = new AtomicReference<>(defaultResult);
     do {
       // caveat: do not replace the loop by iterator nor stream, because tasksQueue can be modified during processing!
+      LOGGER.debug("polling {} tasks from queue", tasksQueue.size());
       for (Task<R> task = tasksQueue.poll(); task != null; task = tasksQueue.poll()) {
         LOGGER.debug("polling {}", task);
         var future = executeTask(task)

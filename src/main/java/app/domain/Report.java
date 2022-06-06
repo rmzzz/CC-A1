@@ -34,6 +34,7 @@ public class Report {
   public Report(Page mainPage, int maxDepth, Locale targetLanguage) {
     this(mainPage, 0, maxDepth, targetLanguage);
   }
+
   public Report(Page mainPage, int depth, int maxDepth, Locale targetLanguage) {
     this.mainPages.add(mainPage);
     this.depth = depth;
@@ -44,7 +45,7 @@ public class Report {
 
   public Report merge(Report report) {
     if (this.depth > report.depth) {
-      for(var page : mainPages) {
+      for (var page : mainPages) {
         report.subPages.put(page.getPageUrl(), page);
       }
       report.subPages.putAll(subPages);
@@ -53,7 +54,7 @@ public class Report {
     if (this.depth == report.depth) {
       this.mainPages.addAll(report.mainPages);
     } else {
-      for(var page : report.mainPages) {
+      for (var page : report.mainPages) {
         this.subPages.put(page.getPageUrl(), page);
       }
     }
@@ -64,7 +65,7 @@ public class Report {
   public List<Page> getPageList() {
     List<Page> pageList = new LinkedList<>();
     Set<URI> addedUrls = new HashSet<>();
-    for(Page mainPage : mainPages) {
+    for (Page mainPage : mainPages) {
       addPageToList(mainPage, pageList, addedUrls, 1);
     }
     return pageList;
@@ -78,10 +79,8 @@ public class Report {
     page.setDepth(currentDepth);
     if (currentDepth < maxDepth) {
       for (Link link : page.getLinks()) {
-        Page subPage = subPages.get(link.getUrl());
-        if (subPage == null) {
-          link.setBroken(true); // TODO check if this is necessary
-        } else {
+        if (!link.isBroken()) {
+          Page subPage = subPages.getOrDefault(link.getUrl(), Page.EMPTY);
           addPageToList(subPage, pageList, addedUrls, currentDepth + 1);
         }
       }

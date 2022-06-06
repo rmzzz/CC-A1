@@ -76,7 +76,7 @@ public class WebCrawler {
                     logger.debug("Broken link: " + uri, blx);
                     link.setBroken(true);
                     link.setErrorMessage(blx.getMessage());
-                    return Report.EMPTY; // TODO maybe add Report.ERROR
+                    return Report.EMPTY;
                   }
                   return null;
                 }));

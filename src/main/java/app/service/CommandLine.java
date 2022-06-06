@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -50,15 +51,13 @@ public class CommandLine implements InputParameters {
     for (int i = 0; i < args.length; i = i + 2) {
       if (isArgumentAFlagOfType(args[i], PARAM_URL)) {
         urlFlag = commandLine.checkFlag(urlFlag);
-        i += parseURLandReturnNumberOfURLs(commandLine, args, i) - 1; //-1 to compensate for the usual increment by 2 which shouldn't happen after URL parsing
-
+        i += commandLine.parseURLandReturnNumberOfURLs(args, i) - 1; //-1 to compensate for the usual increment by 2 which shouldn't happen after URL parsing
       } else if (isArgumentAFlagOfType(args[i], PARAM_DEPTH)) {
         depthFlag = commandLine.checkFlag(depthFlag);
-        parseDepth(commandLine, args[i + 1]);
-
+        commandLine.parseDepth(args[i + 1]);
       } else if (isArgumentAFlagOfType(args[i], PARAM_LANGUAGE)) {
         langFlag = commandLine.checkFlag(langFlag);
-        parseLanguage(commandLine, args[i + 1]);
+        commandLine.parseLanguage(args[i + 1]);
       } else if (isArgumentAFlagOfType(args[i], PARAM_THREADS_COUNT)) {
         threadsFlag = commandLine.checkFlag(threadsFlag);
         commandLine.parseThreadsCount(args[i + 1]);
@@ -68,32 +67,31 @@ public class CommandLine implements InputParameters {
     }
   }
 
-  private static int parseURLandReturnNumberOfURLs(CommandLine commandLine, String[] args, int urlFlagIndex) {
-
+  private int parseURLandReturnNumberOfURLs(String[] args, int urlFlagIndex) {
     try {
       urlFlagIndex++;
-
       while (urlFlagIndex < args.length && !isArgumentAnyFlag(args[urlFlagIndex])) {
-        commandLine.urlList.add(new URI(args[urlFlagIndex]));
+        this.urlList.add(new URI(args[urlFlagIndex]));
         urlFlagIndex++;
       }
-
     } catch (URISyntaxException exception) {
-      logger.warn("Error when trying to parse URL from command line");
+      logger.warn("Error when trying to parse URL from command line", exception);
+      valid = false;
     }
-    return commandLine.urlList.size();
+    return this.urlList.size();
   }
 
-  private static void parseLanguage(CommandLine commandLine, String langString) {
-    commandLine.targetLanguage = new Locale(langString);
+  void parseLanguage(String langString) {
+    checkLanguage(langString);
+    this.targetLanguage = new Locale(langString);
   }
 
-  private static void parseDepth(CommandLine commandLine, String depthString) {
-    commandLine.depth = Integer.parseInt(depthString);
-    commandLine.checkForValidDepth();
+  void parseDepth(String depthString) {
+    this.depth = Integer.parseInt(depthString);
+    checkForValidDepth();
   }
 
-  private void parseThreadsCount(String threadsString) {
+  void parseThreadsCount(String threadsString) {
     this.threadsCount = Integer.parseInt(threadsString);
     checkForValidThreadsCount();
   }
@@ -121,6 +119,13 @@ public class CommandLine implements InputParameters {
 
   void checkForValidThreadsCount() {
     if (threadsCount < 0 || threadsCount > 255) {
+      valid = false;
+    }
+  }
+
+  void checkLanguage(String language) {
+    if (Arrays.stream(Locale.getISOLanguages()).noneMatch(l -> l.equals(language))) {
+      logger.warn("Unknown language: {}", language);
       valid = false;
     }
   }

@@ -140,4 +140,32 @@ class CommandLineTest {
               -t <count> --threads <count> - set number of threads. By default number will be selected based on available CPU cores.
             """, usage);
   }
+
+  @Test
+  void checkLanguageShouldAcceptAllValidLanguages() {
+    for(String lang : Locale.getISOLanguages()) {
+      cli.checkLanguage(lang);
+    }
+    assertTrue(cli.isValid());
+  }
+
+  @Test
+  void checkLanguageShouldNotAcceptInvalidLanguage() {
+    cli.checkLanguage("xx");
+    assertFalse(cli.isValid());
+  }
+
+  @Test
+  void checkValidThreadsCountShouldAcceptPositiveNumber() {
+    cli.parseThreadsCount("1");
+    assertTrue(cli.isValid());
+  }
+
+  @Test
+  void checkValidThreadsCountShouldNotAcceptNegativeNumber() {
+    cli.parseThreadsCount("-1");
+    assertFalse(cli.isValid());
+  }
+
+
 }

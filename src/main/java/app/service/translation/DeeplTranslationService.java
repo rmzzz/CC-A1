@@ -118,7 +118,7 @@ public class DeeplTranslationService implements TranslationService {
     }
     int size = translations.size();
     if (size != text.length) {
-      logger.warn("Received " + size + " translations, but requested " + text.length);
+      logger.warn("Received {} translations, but requested {}", size, text.length);
       // resilience
       size = Math.min(size, text.length);
     }

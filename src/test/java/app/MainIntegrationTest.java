@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,16 +18,18 @@ import static org.junit.jupiter.api.Assertions.*;
 @Disabled("because it crawls real web pages, thus, not suitable for automated tests")
 class MainIntegrationTest {
   InputParameters testInputParameters;
-  URI url;
+  List<URI> urls;
   int depth;
   Locale targetLanguage;
 
   @BeforeEach
   void setUp() {
+    urls = new ArrayList<>();
     testInputParameters = new InputParameters() {
+
       @Override
-      public URI getUrl() {
-        return url;
+      public List<URI> getUrls() {
+        return urls;
       }
 
       @Override
@@ -37,12 +41,17 @@ class MainIntegrationTest {
       public Locale getTargetLanguage() {
         return targetLanguage;
       }
+
+      @Override
+      public int getThreadsCount() {
+        return 0;
+      }
     };
   }
 
   @Test
   void executeCommandOnAAUwithDepth1() throws IOException {
-    url = URI.create("https://www.aau.at");
+    urls.add(URI.create("https://www.aau.at"));
     depth = 1;
     targetLanguage = Locale.ENGLISH;
     Main.executeCommand(testInputParameters);
@@ -54,7 +63,7 @@ class MainIntegrationTest {
 
   @Test
   void executeCommandOnAAUwithRU() throws IOException {
-    url = URI.create("https://www.aau.at");
+    urls.add(URI.create("https://www.aau.at"));
     depth = 1;
     targetLanguage = new Locale("ru");
     Main.executeCommand(testInputParameters);

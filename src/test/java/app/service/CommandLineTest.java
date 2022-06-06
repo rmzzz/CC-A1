@@ -137,6 +137,7 @@ class CommandLineTest {
               -u <url>, --url <url> - URLs to crawl, e.g. "https://www.aau.at" or just "www.aau.at" separated with space
               -d <depth>, --depth <depth> - the depth of websites to crawl, e.g. 3
               -l <lang>, --lang <lang> - target language as IETF BCP 47 language tag, e.g. "de-AT" or "de"
+              -t <count> --threads <count> - set number of threads. By default number will be selected based on available CPU cores.
             """, usage);
   }
 }

@@ -17,19 +17,22 @@ public class CommandLine implements InputParameters {
   public static final String PARAM_DEPTH = "depth";
   public static final String PARAM_LANGUAGE = "lang";
 
-  static Logger logger = LoggerFactory.getLogger(CommandLine.class);
+  public static final String PARAM_THREADS_COUNT = "threads";
 
-  private URI url;
+  static Logger logger = LoggerFactory.getLogger(CommandLine.class);
 
   private List<URI> urlList;
   private int depth;
   private Locale targetLanguage;
   private boolean valid;
 
+  private int threadsCount;
+
   private CommandLine() {
     valid = true;
     urlList = new ArrayList<>();
     depth = 2;
+    threadsCount = 0;
   }
 
   public static CommandLine fromCommandLine(String... args) {
@@ -38,10 +41,11 @@ public class CommandLine implements InputParameters {
     return commandLine;
   }
 
-  private static void parseArguments(CommandLine commandLine, String[] args){
+  private static void parseArguments(CommandLine commandLine, String[] args) {
     boolean urlFlag = false;
     boolean depthFlag = false;
     boolean langFlag = false;
+    boolean threadsFlag = false;
 
     for (int i = 0; i < args.length; i = i + 2) {
       if (isArgumentAFlagOfType(args[i], PARAM_URL)) {
@@ -50,26 +54,26 @@ public class CommandLine implements InputParameters {
 
       } else if (isArgumentAFlagOfType(args[i], PARAM_DEPTH)) {
         depthFlag = commandLine.checkFlag(depthFlag);
-        parseDepth(commandLine, args[i+1]);
+        parseDepth(commandLine, args[i + 1]);
 
       } else if (isArgumentAFlagOfType(args[i], PARAM_LANGUAGE)) {
         langFlag = commandLine.checkFlag(langFlag);
-        parseLanguage(commandLine, args[i+1]);
-
+        parseLanguage(commandLine, args[i + 1]);
+      } else if (isArgumentAFlagOfType(args[i], PARAM_THREADS_COUNT)) {
+        threadsFlag = commandLine.checkFlag(threadsFlag);
+        commandLine.parseThreadsCount(args[i + 1]);
       } else {
         commandLine.valid = false;
       }
     }
   }
 
-
-
-  private static int parseURLandReturnNumberOfURLs(CommandLine commandLine, String[] args, int urlFlagIndex){
+  private static int parseURLandReturnNumberOfURLs(CommandLine commandLine, String[] args, int urlFlagIndex) {
 
     try {
       urlFlagIndex++;
 
-      while(urlFlagIndex < args.length && !isArgumentAnyFlag(args[urlFlagIndex])){
+      while (urlFlagIndex < args.length && !isArgumentAnyFlag(args[urlFlagIndex])) {
         commandLine.urlList.add(new URI(args[urlFlagIndex]));
         urlFlagIndex++;
       }
@@ -80,19 +84,25 @@ public class CommandLine implements InputParameters {
     return commandLine.urlList.size();
   }
 
-  private static void parseLanguage(CommandLine commandLine,String langString){
+  private static void parseLanguage(CommandLine commandLine, String langString) {
     commandLine.targetLanguage = new Locale(langString);
   }
 
-  private static void parseDepth(CommandLine commandLine,String depthString){
+  private static void parseDepth(CommandLine commandLine, String depthString) {
     commandLine.depth = Integer.parseInt(depthString);
     commandLine.checkForValidDepth();
   }
 
-  static boolean isArgumentAnyFlag(String argument){
+  private void parseThreadsCount(String threadsString) {
+    this.threadsCount = Integer.parseInt(threadsString);
+    checkForValidThreadsCount();
+  }
+
+  static boolean isArgumentAnyFlag(String argument) {
     return isArgumentAFlagOfType(argument, PARAM_URL)
             || isArgumentAFlagOfType(argument, PARAM_DEPTH)
-            || isArgumentAFlagOfType(argument, PARAM_LANGUAGE);
+            || isArgumentAFlagOfType(argument, PARAM_LANGUAGE)
+            || isArgumentAFlagOfType(argument, PARAM_THREADS_COUNT);
   }
 
 
@@ -109,13 +119,14 @@ public class CommandLine implements InputParameters {
     }
   }
 
-  private static boolean isArgumentAFlagOfType(String argument, String flagType) {
-    return (argument.equals("--" + flagType) || argument.equals("-" + flagType.charAt(0)));
+  void checkForValidThreadsCount() {
+    if (threadsCount < 0 || threadsCount > 255) {
+      valid = false;
+    }
   }
 
-  @Override
-  public URI getUrl() {
-    return url;
+  private static boolean isArgumentAFlagOfType(String argument, String flagType) {
+    return (argument.equals("--" + flagType) || argument.equals("-" + flagType.charAt(0)));
   }
 
   @Override
@@ -133,6 +144,11 @@ public class CommandLine implements InputParameters {
     return targetLanguage;
   }
 
+  @Override
+  public int getThreadsCount() {
+    return threadsCount;
+  }
+
   public boolean isValid() {
     return valid;
   }
@@ -143,9 +159,11 @@ public class CommandLine implements InputParameters {
                       -%c <url>, --%s <url> - URLs to crawl, e.g. "https://www.aau.at" or just "www.aau.at" separated with space
                       -%c <depth>, --%s <depth> - the depth of websites to crawl, e.g. 3
                       -%c <lang>, --%s <lang> - target language as IETF BCP 47 language tag, e.g. "de-AT" or "de"
+                      -%c <count> --%s <count> - set number of threads. By default number will be selected based on available CPU cores.
                     """,
             PARAM_URL.charAt(0), PARAM_URL,
             PARAM_DEPTH.charAt(0), PARAM_DEPTH,
-            PARAM_LANGUAGE.charAt(0), PARAM_LANGUAGE);
+            PARAM_LANGUAGE.charAt(0), PARAM_LANGUAGE,
+            PARAM_THREADS_COUNT.charAt(0), PARAM_THREADS_COUNT);
   }
 }

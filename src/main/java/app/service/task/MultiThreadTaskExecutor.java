@@ -1,5 +1,6 @@
 package app.service.task;
 
+import app.domain.InputParameters;
 import app.domain.Task;
 import app.domain.TaskExecutor;
 import org.slf4j.Logger;
@@ -25,8 +26,10 @@ public class MultiThreadTaskExecutor implements TaskExecutor {
     this.executor = executor;
   }
 
-  public MultiThreadTaskExecutor() {
-    this(Executors.newWorkStealingPool());
+  public MultiThreadTaskExecutor(InputParameters parameters) {
+    this(parameters.getThreadsCount() == 0
+            ? Executors.newWorkStealingPool()
+            : Executors.newWorkStealingPool(parameters.getThreadsCount()));
   }
 
   @Override
@@ -82,8 +85,8 @@ public class MultiThreadTaskExecutor implements TaskExecutor {
     }
 
     T wrapAsyncExecution() {
-        LOGGER.debug("executing {}", this);
-        return taskBody.apply(parameter);
+      LOGGER.debug("executing {}", this);
+      return taskBody.apply(parameter);
     }
 
     @Override

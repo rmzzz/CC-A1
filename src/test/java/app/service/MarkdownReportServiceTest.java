@@ -4,12 +4,9 @@ import app.domain.Heading;
 import app.domain.Link;
 import app.domain.Page;
 import app.domain.Report;
-import app.exception.BrokenLinkException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class MarkdownReportServiceTest {
@@ -101,10 +99,10 @@ public class MarkdownReportServiceTest {
     linksList2 = new LinkedList<>();
     linksList3 = new LinkedList<>();
 
-    when(cli1.getUrl()).thenReturn(googleURL);
+    when(cli1.getUrls()).thenReturn(List.of(googleURL));
     when(cli1.getDepth()).thenReturn(1);
     when(cli1.getTargetLanguage()).thenReturn(Locale.ENGLISH);
-    when(cli2.getUrl()).thenReturn(qwantURL);
+    when(cli2.getUrls()).thenReturn(List.of(qwantURL));
     when(cli2.getDepth()).thenReturn(3);
     when(cli2.getTargetLanguage()).thenReturn(Locale.FRENCH);
 

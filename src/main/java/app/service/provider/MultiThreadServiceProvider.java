@@ -10,7 +10,7 @@ import app.service.translation.DeeplTranslationService;
 
 public class MultiThreadServiceProvider extends BaseServiceProvider {
   public MultiThreadServiceProvider(InputParameters parameters) {
-    super(new MultiThreadTaskExecutor(),
+    super(new MultiThreadTaskExecutor(parameters),
             new JsoupPageLoader(),
             new CachingTranslationService(
                     new BufferingTranslationService(

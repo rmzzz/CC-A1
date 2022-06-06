@@ -7,9 +7,9 @@ import app.service.provider.SingleThreadServiceProvider;
 
 public class ServiceProviderFactory {
   public static ServiceProvider create(InputParameters parameters) {
-    if (parameters.getUrls().size() > 1) {
-      return new MultiThreadServiceProvider(parameters);
+    if (parameters.getThreadsCount() == 1) {
+      return new SingleThreadServiceProvider(parameters);
     }
-    return new SingleThreadServiceProvider(parameters);
+    return new MultiThreadServiceProvider(parameters);
   }
 }

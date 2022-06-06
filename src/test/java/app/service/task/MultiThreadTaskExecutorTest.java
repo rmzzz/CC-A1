@@ -102,6 +102,25 @@ class MultiThreadTaskExecutorTest extends BaseUnitTest {
   }
 
   @Test
+  void executeAllTasksThenMergeResultMustNotCrushOnErrorInSingleTask() {
+    for (int i = 1; i <= NUMBER_OF_TEST_THREADS; i++) {
+      Task<String> taskMock = executor.createTask(i, this::testFailingTaskBody);
+      queue.add(taskMock);
+    }
+    String result = executor.executeAllTasksThenMergeResult(queue, "", String::concat);
+    assertEquals(NUMBER_OF_TEST_THREADS - 1, result.length());
+  }
+
+  String testFailingTaskBody(int parameter) {
+    if (parameter == 3) {
+      throw new RuntimeException("Test error " + parameter);
+    }
+    String result = Character.toString('a' + parameter);
+    logger.debug("task executed ({}) => {}", parameter, result);
+    return result;
+  }
+
+  @Test
   void executeTask() throws Exception {
     Task<String> task = executor.createTask("test", p -> "mock");
     CompletionStage<String> result = executor.executeTask(task);

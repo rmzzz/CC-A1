@@ -51,6 +51,7 @@ public class MultiThreadTaskExecutor implements TaskExecutor {
       for (Task<R> task = tasksQueue.poll(); task != null; task = tasksQueue.poll()) {
         LOGGER.debug("polling {}", task);
         var future = executeTask(task)
+                .whenComplete(this::handleTaskCompletion)
                 .thenAccept(nextResult -> {
                   // synchronize on resultHolder in order to ensure all reports are merged
                   synchronized (resultHolder) {
@@ -70,6 +71,14 @@ public class MultiThreadTaskExecutor implements TaskExecutor {
     }
     LOGGER.debug("{} tasks done; result: {}", completableFutures.size(), result);
     return result;
+  }
+
+  <R> void handleTaskCompletion(R result, Throwable throwable) {
+    if (throwable != null) {
+      LOGGER.error("Task completed with error", throwable);
+    } else if (result != null) {
+      LOGGER.debug("Task completed with result: {}", result);
+    }
   }
 
   class MultiThreadTask<T> extends Task<T> {
